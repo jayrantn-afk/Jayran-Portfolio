@@ -12,25 +12,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* 基礎色彩與字體設定，保持最高質感 */
         :root { --bg-color: #050505; --text-main: #f5f5f5; --text-muted: #888888; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
         h1, h2, h3, .serif-tc { font-family: 'Playfair Display', 'Noto Serif TC', serif; }
         
+        /* 捲軸美化 */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
 
+        /* 專屬高階游標 */
         .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
 
+        /* 視差與淡入動畫 */
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-up.in-view { opacity: 1; transform: translateY(0); }
 
+        /* 網格圖片 Hover 特效 */
         .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
         .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.7) grayscale(0.3); }
         .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1) grayscale(0); }
         .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 2.5rem; }
         .portfolio-item:hover .portfolio-overlay { opacity: 1; }
 
+        /* 分類按鈕 Hover 線條動畫 */
         .filter-btn { position: relative; color: var(--text-muted); transition: color 0.3s ease; padding-bottom: 4px; }
         .filter-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--text-main); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .filter-btn:hover, .filter-btn.active { color: var(--text-main); }
@@ -47,7 +53,7 @@
     <div id="global-loader" class="fixed inset-0 bg-[#050505] z-[100000] flex flex-col justify-center items-center transition-opacity duration-700">
         <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran <span class="font-bold">Studio</span></div>
         <div id="loader-error" class="hidden mt-6 bg-red-900/50 border border-red-500 text-red-200 px-6 py-3 rounded-lg text-sm tracking-widest font-bold">
-            資料庫連線拒絕，請檢查 Firestore 權限。
+            資料讀取異常，請檢查網路狀態或重整網頁。
         </div>
     </div>
 
@@ -62,14 +68,13 @@
 
     <header class="relative h-screen flex flex-col justify-center items-center text-center px-4">
         <div class="absolute inset-0 z-[-1]">
-            <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-30">
+            <img id="hero-bg-img" src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-30 transition-all duration-1000">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         
         <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
             Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
         </h1>
-        
         <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
             杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
         </p>
@@ -93,7 +98,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10" id="portfolio-grid"></div>
-        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品，請前往後台新增。</div>
+        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品展示。</div>
     </section>
 
     <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
@@ -127,22 +132,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // 【防呆】處理錯誤的回調函數
         function handleFirebaseError(error) {
-            console.error("Firebase 連線被拒絕:", error);
+            console.error("Firebase 讀取失敗:", error);
             const loader = document.getElementById('global-loader');
             const errorMsg = document.getElementById('loader-error');
             if (loader && errorMsg) {
-                // 不再無限閃爍，改為顯示紅字錯誤警告
                 loader.querySelector('.animate-pulse').classList.remove('animate-pulse');
                 errorMsg.classList.remove('hidden');
             }
         }
 
-        // 1. 監聽網站動態文字設定
+        // 1. 抓取動態文字與直連背景圖網址
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                
+                // 動態修改首頁背景圖 (讀取外部網址)
+                if(data.heroBg) {
+                    document.getElementById('hero-bg-img').src = data.heroBg;
+                }
+
                 if(data.h1 || data.h2) {
                     document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
                 }
@@ -164,7 +173,7 @@
             }
         }, handleFirebaseError);
 
-        // 2. 監聽作品集資料
+        // 2. 抓取作品集資料 (讀取圖片網址)
         let allWorks = [];
         let currentFilter = 'all';
 
@@ -196,6 +205,7 @@
                 let colSpan = 'col-span-1 md:col-span-6';
                 let heightClass = 'h-[50vh] md:h-[60vh]';
 
+                // 非對稱排版邏輯
                 if (index % 4 === 0) { colSpan = 'col-span-1 md:col-span-8'; heightClass = 'h-[50vh] md:h-[70vh]'; }
                 else if (index % 4 === 1) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[70vh]'; }
                 else if (index % 4 === 2) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[60vh]'; }
@@ -204,9 +214,10 @@
                 const categoryLabel = work.category === 'video' ? 'Cinematography' : 'Graphic Design';
                 const clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
 
+                // work.imageUrl 這裡會直接讀取您貼入的 imgur 等外部網址
                 const itemHTML = `
                     <div class="portfolio-item ${colSpan} ${heightClass} fade-up in-view" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
-                        <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover portfolio-img">
+                        <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover portfolio-img" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">
                         <div class="portfolio-overlay">
                             <p class="text-xs tracking-widest text-gray-300 mb-2 uppercase">${categoryLabel}</p>
                             <h3 class="text-2xl md:text-3xl lg:text-4xl serif-tc">${work.title}</h3>
@@ -217,6 +228,7 @@
             });
         }
 
+        // 互動動畫腳本
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
         document.addEventListener('mouseover', (e) => {
