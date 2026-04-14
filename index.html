@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 基礎色彩與字體設定，保持最高質感 */
         :root { --bg-color: #050505; --text-main: #f5f5f5; --text-muted: #888888; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
         h1, h2, h3, .serif-tc { font-family: 'Playfair Display', 'Noto Serif TC', serif; }
@@ -23,11 +22,9 @@
 
         .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
 
-        /* 視差與淡入動畫 */
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-up.in-view { opacity: 1; transform: translateY(0); }
 
-        /* 網格圖片 Hover 特效 */
         .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
         .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.7) grayscale(0.3); }
         .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1) grayscale(0); }
@@ -49,9 +46,11 @@
 
     <div id="global-loader" class="fixed inset-0 bg-[#050505] z-[100000] flex flex-col justify-center items-center transition-opacity duration-700">
         <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran <span class="font-bold">Studio</span></div>
+        <div id="loader-error" class="hidden mt-6 bg-red-900/50 border border-red-500 text-red-200 px-6 py-3 rounded-lg text-sm tracking-widest font-bold">
+            資料庫連線拒絕，請檢查 Firestore 權限。
+        </div>
     </div>
 
-    <!-- 導航列 -->
     <nav class="fixed w-full z-50 mix-blend-difference px-6 py-8 md:px-12 flex justify-between items-center">
         <div class="text-xl md:text-2xl font-bold tracking-[0.2em] uppercase cursor-pointer" onclick="window.scrollTo(0,0)">
             Jayran <span class="text-gray-400 font-light">Studio</span>
@@ -61,19 +60,20 @@
         </div>
     </nav>
 
-    <!-- 首頁視覺 -->
     <header class="relative h-screen flex flex-col justify-center items-center text-center px-4">
         <div class="absolute inset-0 z-[-1]">
-            <!-- 預設背景圖，未來可在這替換成工作室的旗艦大圖 -->
             <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-30">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
-        <h1 class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+        
+        <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
             Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
         </h1>
-        <p class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
+        
+        <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
             杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
         </p>
+
         <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 fade-up" style="transition-delay: 0.4s;">
             <a href="#work" class="flex flex-col items-center text-gray-500 hover:text-white transition-colors duration-300">
                 <span class="text-xs tracking-widest uppercase mb-2">Scroll</span>
@@ -82,10 +82,9 @@
         </div>
     </header>
 
-    <!-- 作品區 -->
     <section id="work" class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
         <div class="flex flex-col md:flex-row justify-between items-end mb-16 fade-up">
-            <h2 class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
+            <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
             <div class="flex gap-6 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light">
                 <button class="filter-btn active" onclick="filterWorks('all')">All</button>
                 <button class="filter-btn" onclick="filterWorks('video')">Video (影像)</button>
@@ -93,26 +92,28 @@
             </div>
         </div>
         
-        <!-- 自動生成網格 -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10" id="portfolio-grid"></div>
-        
-        <!-- 尚未上傳提示 -->
         <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品，請前往後台新增。</div>
     </section>
 
     <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-16">
+            <h2 id="dyn-contact-text" class="text-2xl md:text-4xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
+            <a id="dyn-contact-email" href="mailto:hello@jayran.studio" class="text-lg border-b border-white pb-1 hover:text-gray-400 hover:border-gray-400 transition-all">
+                hello@jayran.studio
+            </a>
+        </div>
+        
         <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 tracking-widest uppercase">
             <div>&copy; 2026 JAYRAN STUDIO. All rights reserved. 
-                <!-- 指向專屬後台的連結 -->
                 <a href="admin.html" class="ml-2 hover:text-white transition" title="進入管理中心"><i class="fas fa-lock"></i></a>
             </div>
         </div>
     </footer>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
@@ -120,27 +121,61 @@
             projectId: "jayran-portfolio",
             storageBucket: "jayran-portfolio.firebasestorage.app",
             messagingSenderId: "304873552635",
-            appId: "1:304873552635:web:76a697004d834182924e5e",
-            measurementId: "G-V8FQJ01VS2"
+            appId: "1:304873552635:web:76a697004d834182924e5e"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
+        // 【防呆】處理錯誤的回調函數
+        function handleFirebaseError(error) {
+            console.error("Firebase 連線被拒絕:", error);
+            const loader = document.getElementById('global-loader');
+            const errorMsg = document.getElementById('loader-error');
+            if (loader && errorMsg) {
+                // 不再無限閃爍，改為顯示紅字錯誤警告
+                loader.querySelector('.animate-pulse').classList.remove('animate-pulse');
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // 1. 監聽網站動態文字設定
+        onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if(data.h1 || data.h2) {
+                    document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
+                }
+                if(data.sub) document.getElementById('dyn-sub').innerText = data.sub;
+                if(data.secTitle) document.getElementById('dyn-sec-title').innerHTML = data.secTitle;
+                if(data.contactText) {
+                    const words = data.contactText.split(' ');
+                    if(words.length > 2) {
+                        const lastTwo = words.splice(-2).join(' ');
+                        document.getElementById('dyn-contact-text').innerHTML = `${words.join(' ')} <span class="text-white">${lastTwo}</span>`;
+                    } else {
+                        document.getElementById('dyn-contact-text').innerHTML = data.contactText;
+                    }
+                }
+                if(data.email) {
+                    document.getElementById('dyn-contact-email').innerText = data.email;
+                    document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
+                }
+            }
+        }, handleFirebaseError);
+
+        // 2. 監聽作品集資料
         let allWorks = [];
         let currentFilter = 'all';
 
         onSnapshot(collection(db, "jayran_works"), (snapshot) => {
             allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // 關鍵：依據後台拼圖設定的 `order` 來做排版順序！
             allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-            
             renderPortfolio();
 
             const loader = document.getElementById('global-loader');
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
-        });
+        }, handleFirebaseError);
 
         window.filterWorks = function(type) {
             currentFilter = type;
@@ -158,7 +193,6 @@
             if (filteredWorks.length === 0) { emptyState.classList.remove('hidden'); } else { emptyState.classList.add('hidden'); }
 
             filteredWorks.forEach((work, index) => {
-                // 自動非對稱排版：依據後台排序的位置，自動決定哪張是大圖、哪張是小圖
                 let colSpan = 'col-span-1 md:col-span-6';
                 let heightClass = 'h-[50vh] md:h-[60vh]';
 
@@ -183,7 +217,6 @@
             });
         }
 
-        /* UI 游標與動畫 */
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
         document.addEventListener('mouseover', (e) => {
