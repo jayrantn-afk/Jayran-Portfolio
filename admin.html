@@ -187,7 +187,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
@@ -326,9 +326,18 @@
                     const safeName = 'hero_' + Date.now() + '_' + bgFile.name.replace(/[^a-zA-Z0-9.]/g, '');
                     const storageRef = ref(storage, 'settings_images/' + safeName);
                     
-                    // 匠人修復：拔除 Timeout 限制，讓 Firebase 原生處理上傳，無論多久都等它傳完
-                    await uploadBytes(storageRef, bgFile);
-                    data.heroBg = await getDownloadURL(storageRef);
+                  // 匠人終極升級：斷點續傳與即時進度 %
+                    data.heroBg = await new Promise((resolve, reject) => {
+                        const uploadTask = uploadBytesResumable(storageRef, bgFile);
+                        uploadTask.on('state_changed', 
+                            (snapshot) => {
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                document.getElementById('upload-toast-filename').innerText = `${bgFile.name} - 進度 ${Math.round(progress)}%`;
+                            }, 
+                            (error) => reject(error), 
+                            async () => { resolve(await getDownloadURL(uploadTask.snapshot.ref)); }
+                        );
+                    });
                     bgFileInput.value = ''; // 上傳成功後清空 input
                 } else {
                     // 若沒上傳新圖，保留舊圖的 URL
@@ -477,9 +486,18 @@
                 const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
                 const storageRef = ref(storage, 'portfolio_images/' + safeName);
                 
-                // 匠人修復：拔除 Timeout 限制
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
+              // 匠人終極升級：斷點續傳與即時進度 %
+                const downloadURL = await new Promise((resolve, reject) => {
+                    const uploadTask = uploadBytesResumable(storageRef, file);
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            document.getElementById('upload-toast-filename').innerText = `${file.name} - 進度 ${Math.round(progress)}%`;
+                        }, 
+                        (error) => reject(error), 
+                        async () => { resolve(await getDownloadURL(uploadTask.snapshot.ref)); }
+                    );
+                });
 
                 // 寫入到 Database
                 const catWorks = allWorks.filter(w => w.category === category);
