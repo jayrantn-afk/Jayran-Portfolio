@@ -1,193 +1,124 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jayran Studio | 後台管理中心</title>
+    <title>JAYRAN STUDIO | 杰冉影像</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
     <style>
-        body { background-color: #f3f4f6; font-family: -apple-system, sans-serif; }
-        #login-overlay { position: fixed; inset: 0; background: #111827; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .sortable-ghost { opacity: 0.4; background-color: #e5e7eb; border: 2px dashed #3b82f6; }
-        .drag-handle { cursor: grab; }
-        .drag-handle:active { cursor: grabbing; }
+        /* 基礎色彩與字體設定，保持最高質感 */
+        :root { --bg-color: #050505; --text-main: #f5f5f5; --text-muted: #888888; }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        h1, h2, h3, .serif-tc { font-family: 'Playfair Display', 'Noto Serif TC', serif; }
+        
+        /* 捲軸美化 */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+
+        /* 專屬高階游標 */
+        .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
+
+        /* 視差與淡入動畫 */
+        .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-up.in-view { opacity: 1; transform: translateY(0); }
+
+        /* 網格圖片 Hover 特效 */
+        .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
+        .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.7) grayscale(0.3); }
+        .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1) grayscale(0); }
+        .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 2.5rem; }
+        .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+
+        /* 分類按鈕 Hover 線條動畫 */
+        .filter-btn { position: relative; color: var(--text-muted); transition: color 0.3s ease; padding-bottom: 4px; }
+        .filter-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--text-main); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .filter-btn:hover, .filter-btn.active { color: var(--text-main); }
+        .filter-btn:hover::after, .filter-btn.active::after { width: 100%; }
+
+        .hero-gradient { background: radial-gradient(circle at center, transparent 0%, #050505 100%); }
+        @keyframes scrollDown { 0% { transform: translateY(-100%); } 50% { transform: translateY(100%); } 100% { transform: translateY(100%); } }
     </style>
 </head>
-<body class="h-screen overflow-hidden text-gray-800">
+<body class="antialiased selection:bg-gray-700 selection:text-white">
 
-    <!-- 登入遮罩 -->
-    <div id="login-overlay">
-        <div class="text-4xl font-black mb-8 tracking-widest text-white uppercase">Jayran Admin</div>
-        <input id="login-pwd" type="password" class="p-4 text-center text-black text-xl font-bold rounded-2xl w-80 mb-4 outline-none shadow-lg" placeholder="輸入後台密碼">
-        <div id="login-error" class="text-red-500 font-bold mb-4 hidden">密碼錯誤，請重新輸入</div>
-        <button id="btn-login" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-4 rounded-2xl font-bold text-xl shadow-lg transition cursor-pointer">登入管理中心</button>
-    </div>
+    <div class="custom-cursor hidden md:block" id="cursor"></div>
 
-    <div id="loader" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[9000] hidden flex-col justify-center items-center">
-        <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-        <div id="loader-text" class="text-lg font-bold text-gray-700 tracking-widest">資料處理中...</div>
-    </div>
-
-    <div id="upload-toast" class="fixed bottom-6 right-6 bg-white border border-gray-200 shadow-2xl rounded-xl p-4 flex items-center gap-4 transition-all transform translate-y-20 opacity-0 z-[9999] duration-500 pointer-events-none">
-        <i class="fas fa-circle-notch fa-spin text-blue-600 text-3xl"></i>
-        <div>
-            <div class="text-sm font-black text-gray-800 tracking-widest">檔案背景上傳中...</div>
-            <div id="upload-toast-filename" class="text-xs text-gray-500 w-48 truncate font-bold mt-1"></div>
+    <div id="global-loader" class="fixed inset-0 bg-[#050505] z-[100000] flex flex-col justify-center items-center transition-opacity duration-700">
+        <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran <span class="font-bold">Studio</span></div>
+        <div id="loader-error" class="hidden mt-6 bg-red-900/50 border border-red-500 text-red-200 px-6 py-3 rounded-lg text-sm tracking-widest font-bold">
+            資料讀取異常，請檢查網路狀態或重整網頁。
         </div>
     </div>
 
-    <div class="flex h-full">
-        <!-- 左側面板 -->
-        <aside class="w-96 bg-white shadow-2xl flex flex-col z-10">
-            <div class="p-6 bg-gray-900 text-white flex justify-between items-center">
-                <h1 class="text-xl font-black tracking-widest uppercase">Admin Panel</h1>
-                <a href="index.html" target="_blank" class="text-gray-400 hover:text-white text-sm" title="預覽前台"><i class="fas fa-external-link-alt"></i></a>
+    <nav class="fixed w-full z-50 mix-blend-difference px-6 py-8 md:px-12 flex justify-between items-center">
+        <div class="text-xl md:text-2xl font-bold tracking-[0.2em] uppercase cursor-pointer" onclick="window.scrollTo(0,0)">
+            Jayran <span class="text-gray-400 font-light">Studio</span>
+        </div>
+        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-light">
+            <a href="#work" class="hover:text-gray-400 transition-colors">Works</a>
+        </div>
+    </nav>
+
+    <header class="relative h-screen flex flex-col justify-center items-center text-center px-4">
+        <div class="absolute inset-0 z-[-1]">
+            <img id="hero-bg-img" src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-30 transition-all duration-1000">
+            <div class="absolute inset-0 hero-gradient"></div>
+        </div>
+        
+        <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+            Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
+        </h1>
+        <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
+            杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
+        </p>
+
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 fade-up" style="transition-delay: 0.4s;">
+            <a href="#work" class="flex flex-col items-center text-gray-500 hover:text-white transition-colors duration-300">
+                <span class="text-xs tracking-widest uppercase mb-2">Scroll</span>
+                <div class="w-[1px] h-12 bg-gray-600 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
+            </a>
+        </div>
+    </header>
+
+    <section id="work" class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 fade-up">
+            <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
+            <div class="flex gap-6 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light">
+                <button class="filter-btn active" onclick="filterWorks('all')">All</button>
+                <button class="filter-btn" onclick="filterWorks('video')">Video (影像)</button>
+                <button class="filter-btn" onclick="filterWorks('graphic')">Graphic (圖文)</button>
             </div>
-            
-            <div class="p-6 flex-1 overflow-y-auto">
-                <h2 class="text-lg font-bold border-b pb-2 mb-6">新增作品</h2>
-                <div class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">作品標題 <span class="text-red-500">*</span></label>
-                        <input id="w-title" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg font-bold focus:border-blue-500 outline-none transition" placeholder="輸入標題...">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">作品分類 <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="w-cat" value="video" class="peer sr-only" checked>
-                                <div class="text-center p-3 border rounded-lg font-bold text-sm peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-600 transition">🎬 影像</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="w-cat" value="graphic" class="peer sr-only">
-                                <div class="text-center p-3 border rounded-lg font-bold text-sm peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 transition">🎨 圖文</div>
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">上傳封面圖 (可傳 GIF/PNG/JPG) <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition relative cursor-pointer">
-                            <input type="file" id="w-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                            <div id="file-name" class="text-sm font-bold text-gray-600">點擊或拖曳圖片至此</div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">外部連結 (選填)</label>
-                        <input id="w-link" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm focus:border-blue-500 outline-none" placeholder="例如 YouTube 或 Behance 網址">
-                    </div>
-                    
-                    <button id="btn-submit" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition transform mt-4">
-                        確認發佈
-                    </button>
-                </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10" id="portfolio-grid"></div>
+        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品展示。</div>
+    </section>
+
+    <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-16">
+            <h2 id="dyn-contact-text" class="text-2xl md:text-4xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
+            <a id="dyn-contact-email" href="mailto:hello@jayran.studio" class="text-lg border-b border-white pb-1 hover:text-gray-400 hover:border-gray-400 transition-all">
+                hello@jayran.studio
+            </a>
+        </div>
+        
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 tracking-widest uppercase">
+            <div>&copy; 2026 JAYRAN STUDIO. All rights reserved. 
+                <a href="admin.html" class="ml-2 hover:text-white transition" title="進入管理中心"><i class="fas fa-lock"></i></a>
             </div>
-        </aside>
-
-        <!-- 右側主畫面 -->
-        <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col">
-            <!-- 頂部分頁標籤 -->
-            <div class="flex gap-4 mb-6 border-b border-gray-200 pb-2">
-                <button class="font-bold text-blue-600 border-b-2 border-blue-600 px-3 pb-2 text-lg" onclick="switchView('video', this)">影像專案</button>
-                <button class="font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('graphic', this)">圖文專案</button>
-                <button class="font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('settings', this)"><i class="fas fa-cog mr-1"></i>網站前台設定</button>
-                <div class="flex-1"></div>
-                <!-- 登出按鈕 -->
-                <button onclick="adminLogout()" class="text-gray-400 hover:text-red-500 font-bold text-sm px-3 pb-2"><i class="fas fa-sign-out-alt mr-1"></i>登出</button>
-            </div>
-
-            <!-- 作品排序區塊 -->
-            <div id="view-works" class="block">
-                <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <h2 class="text-2xl font-black mb-1">作品排序與預覽</h2>
-                        <p class="text-sm text-gray-500 font-bold">按住圖片左側的「≡」拖曳，即可改變前台排版。越前面越有機會變成大網格。</p>
-                    </div>
-                    <button id="btn-save-order" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition hidden">
-                        <i class="fas fa-save mr-2"></i>儲存排序
-                    </button>
-                </div>
-                <div id="sortable-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <!-- JS 動態生成 -->
-                </div>
-            </div>
-
-            <!-- 網站設定區塊 -->
-            <div id="view-settings" class="hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 max-w-3xl">
-                    <h2 class="text-2xl font-black mb-6 border-b pb-4">網站視覺與文字設定</h2>
-                    
-                    <div class="space-y-6">
-                        <!-- 新增：背景大圖設定 -->
-                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖 (Hero Background)</h3>
-                            <div>
-                                <label class="block text-xs font-bold text-blue-600 mb-1">上傳新背景 (支援 JPG, PNG, GIF 動態圖)</label>
-                                <div class="flex items-center gap-4">
-                                    <input type="file" id="set-hero-bg" accept="image/*" class="w-full bg-white border border-blue-200 p-2 rounded-lg text-sm cursor-pointer">
-                                </div>
-                                <p class="text-xs text-blue-500 mt-2 font-bold">※ 若不更換請留空。建議尺寸：1920x1080 以上。</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-gray-500"></i>首頁大標題 (Hero Section)</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第一行 (粗體)</label>
-                                    <input id="set-h1" class="w-full border p-3 rounded-lg font-bold" placeholder="Crafting Visual">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第二行 (斜體藝術字)</label>
-                                    <input id="set-h2" class="w-full border p-3 rounded-lg font-bold" placeholder="Masterpieces.">
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">下方中文副標題</label>
-                                <input id="set-sub" class="w-full border p-3 rounded-lg" placeholder="杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計">
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-gray-500"></i>作品區標題</h3>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">英文主標 (可使用 &lt;br&gt; 換行)</label>
-                                <input id="set-sec-title" class="w-full border p-3 rounded-lg font-bold" placeholder="Selected<br>Works.">
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-gray-500"></i>頁尾聯絡資訊</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">聯絡標語</label>
-                                    <input id="set-contact-text" class="w-full border p-3 rounded-lg" placeholder="Ready to start your project?">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">聯絡信箱 (Email)</label>
-                                    <input id="set-contact-email" class="w-full border p-3 rounded-lg font-bold" placeholder="hello@jayran.studio">
-                                </div>
-                            </div>
-                        </div>
-
-                        <button id="btn-save-settings-db" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1">
-                            <i class="fas fa-save mr-2"></i>儲存設定並同步至前台
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+        </div>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
+        import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
@@ -200,345 +131,114 @@ import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL } fr
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
+        
+        function handleFirebaseError(error) {
+            console.error("Firebase 讀取失敗:", error);
+            const loader = document.getElementById('global-loader');
+            const errorMsg = document.getElementById('loader-error');
+            if (loader && errorMsg) {
+                loader.querySelector('.animate-pulse').classList.remove('animate-pulse');
+                errorMsg.classList.remove('hidden');
+            }
+        }
 
+        // 1. 抓取動態文字與直連背景圖網址
+        onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 動態修改首頁背景圖 (讀取外部網址)
+                if(data.heroBg) {
+                    document.getElementById('hero-bg-img').src = data.heroBg;
+                }
+
+                if(data.h1 || data.h2) {
+                    document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
+                }
+                if(data.sub) document.getElementById('dyn-sub').innerText = data.sub;
+                if(data.secTitle) document.getElementById('dyn-sec-title').innerHTML = data.secTitle;
+                if(data.contactText) {
+                    const words = data.contactText.split(' ');
+                    if(words.length > 2) {
+                        const lastTwo = words.splice(-2).join(' ');
+                        document.getElementById('dyn-contact-text').innerHTML = `${words.join(' ')} <span class="text-white">${lastTwo}</span>`;
+                    } else {
+                        document.getElementById('dyn-contact-text').innerHTML = data.contactText;
+                    }
+                }
+                if(data.email) {
+                    document.getElementById('dyn-contact-email').innerText = data.email;
+                    document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
+                }
+            }
+        }, handleFirebaseError);
+
+        // 2. 抓取作品集資料 (讀取圖片網址)
         let allWorks = [];
-        let currentView = 'video';
-        let sortableInstance = null;
+        let currentFilter = 'all';
 
-        // 【記憶密碼機制】12小時內免重新登入
-        const SESSION_HOURS = 12;
-        window.onload = () => {
-            const savedLogin = localStorage.getItem('jayran_admin_auth');
-            if (savedLogin && (Date.now() - savedLogin < SESSION_HOURS * 60 * 60 * 1000)) {
-                document.getElementById('login-overlay').style.display = 'none';
-                initAdminData();
-            }
+        onSnapshot(collection(db, "jayran_works"), (snapshot) => {
+            allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
+            renderPortfolio();
+
+            const loader = document.getElementById('global-loader');
+            if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
+        }, handleFirebaseError);
+
+        window.filterWorks = function(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderPortfolio();
         };
 
-        // 登入邏輯與 Enter 鍵綁定
-        const btnLogin = document.getElementById('btn-login');
-        const loginPwd = document.getElementById('login-pwd');
-        const loginError = document.getElementById('login-error');
+        function renderPortfolio() {
+            const grid = document.getElementById('portfolio-grid');
+            const emptyState = document.getElementById('empty-state');
+            grid.innerHTML = '';
 
-        const doLogin = async () => {
-            const pwd = loginPwd.value;
-            // 密碼已更新為 00430552
-            if(pwd === '00430552') {
-                loginError.classList.add('hidden');
-                localStorage.setItem('jayran_admin_auth', Date.now()); // 紀錄登入時間
-                document.getElementById('login-overlay').style.display = 'none';
-                initAdminData();
-            } else { 
-                // 預覽器會阻擋 alert，改用畫面紅字優雅提示
-                loginError.classList.remove('hidden'); 
-            }
-        };
+            const filteredWorks = currentFilter === 'all' ? allWorks : allWorks.filter(w => w.category === currentFilter);
+            if (filteredWorks.length === 0) { emptyState.classList.remove('hidden'); } else { emptyState.classList.add('hidden'); }
 
-        btnLogin.addEventListener('click', doLogin);
+            filteredWorks.forEach((work, index) => {
+                let colSpan = 'col-span-1 md:col-span-6';
+                let heightClass = 'h-[50vh] md:h-[60vh]';
 
-        // 監聽 Enter 鍵
-        loginPwd.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                doLogin();
-            }
-        });
+                // 非對稱排版邏輯
+                if (index % 4 === 0) { colSpan = 'col-span-1 md:col-span-8'; heightClass = 'h-[50vh] md:h-[70vh]'; }
+                else if (index % 4 === 1) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[70vh]'; }
+                else if (index % 4 === 2) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[60vh]'; }
+                else if (index % 4 === 3) { colSpan = 'col-span-1 md:col-span-8'; heightClass = 'h-[50vh] md:h-[60vh]'; }
 
-        // 登出按鈕
-        window.adminLogout = function() {
-            localStorage.removeItem('jayran_admin_auth');
-            location.reload();
-        };
+                const categoryLabel = work.category === 'video' ? 'Cinematography' : 'Graphic Design';
+                const clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
 
-        async function initAdminData() {
-            showLoader("連接資料庫中...");
-            await fetchData();
-            await fetchSettings();
-            hideLoader();
-        }
-
-        // 顯示選擇的檔名
-        document.getElementById('w-file').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || "點擊或拖曳圖片至此";
-            document.getElementById('file-name').innerText = fileName;
-            document.getElementById('file-name').classList.add('text-blue-600');
-        });
-
-        async function fetchData() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "jayran_works"));
-                allWorks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-                renderList();
-            } catch (error) {
-                console.error("Firestore Read Error:", error);
-                alert("⛔ 讀取作品失敗！請確保 Firestore Database 規則已設定為 allow read, write: if true;");
-            }
-        }
-
-        async function fetchSettings() {
-            try {
-                const docRef = doc(db, "jayran_settings", "frontend");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if(data.h1) document.getElementById('set-h1').value = data.h1;
-                    if(data.h2) document.getElementById('set-h2').value = data.h2;
-                    if(data.sub) document.getElementById('set-sub').value = data.sub;
-                    if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
-                    if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
-                    if(data.email) document.getElementById('set-contact-email').value = data.email;
-                }
-            } catch (error) { console.error("Settings Read Error:", error); }
-        }
-
-        // 【更新：拔除背景大圖上傳的計時器防呆】
-        document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
-            const bgFileInput = document.getElementById('set-hero-bg');
-            const fileName = bgFileInput.files.length > 0 ? bgFileInput.files[0].name : '純文字設定更新';
-            showUploadToast(fileName);
-            const saveBtn = document.getElementById('btn-save-settings-db');
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>背景上傳中...';
-            const data = {
-                h1: document.getElementById('set-h1').value || "Crafting Visual",
-                h2: document.getElementById('set-h2').value || "Masterpieces.",
-                sub: document.getElementById('set-sub').value || "杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計",
-                secTitle: document.getElementById('set-sec-title').value || "Selected<br>Works.",
-                contactText: document.getElementById('set-contact-text').value || "Ready to start your project?",
-                email: document.getElementById('set-contact-email').value || "hello@jayran.studio"
-            };
-            
-            try {
-                // 檢查是否有上傳新的背景圖
-                const bgFileInput = document.getElementById('set-hero-bg');
-                if (bgFileInput.files.length > 0) {
-                    const bgFile = bgFileInput.files[0];
-                    if (bgFile.size > 15 * 1024 * 1024) {
-                        if (!confirm("背景圖片超過 15MB，上傳可能會需要比較久的時間，確定繼續嗎？")) {
-                           hideUploadToast();
-                            const saveBtn = document.getElementById('btn-save-settings-db');
-                            saveBtn.disabled = false;
-                            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存設定並同步至前台'; return;
-                        }
-                    }
-                    const safeName = 'hero_' + Date.now() + '_' + bgFile.name.replace(/[^a-zA-Z0-9.]/g, '');
-                    const storageRef = ref(storage, 'settings_images/' + safeName);
-                    
-                  // 匠人終極升級：斷點續傳與即時進度 %
-                    data.heroBg = await new Promise((resolve, reject) => {
-                        const uploadTask = uploadBytesResumable(storageRef, bgFile);
-                        uploadTask.on('state_changed', 
-                            (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                document.getElementById('upload-toast-filename').innerText = `${bgFile.name} - 進度 ${Math.round(progress)}%`;
-                            }, 
-                            (error) => reject(error), 
-                            async () => { resolve(await getDownloadURL(uploadTask.snapshot.ref)); }
-                        );
-                    });
-                    bgFileInput.value = ''; // 上傳成功後清空 input
-                } else {
-                    // 若沒上傳新圖，保留舊圖的 URL
-                    const docRef = doc(db, "jayran_settings", "frontend");
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists() && docSnap.data().heroBg) {
-                        data.heroBg = docSnap.data().heroBg;
-                    }
-                }
-
-                await setDoc(doc(db, "jayran_settings", "frontend"), data);
-                alert("✅ 網站設定已更新！前台已同步。");
-            } catch (error) {
-                console.error("Settings Write Error:", error);
-                alert("⛔ 儲存失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
-     } finally {
-                hideUploadToast();
-                const saveBtn = document.getElementById('btn-save-settings-db');
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存設定並同步至前台';
-            }
-        });
-
-        // 切換分類與面板
-        window.switchView = function(type, btnEl) {
-            currentView = type;
-            const buttons = btnEl.parentElement.children;
-            for(let i=0; i<3; i++) { buttons[i].className = "font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800"; }
-            btnEl.className = "font-bold text-blue-600 border-b-2 border-blue-600 px-3 pb-2 text-lg";
-            
-            if (type === 'settings') {
-                document.getElementById('view-works').classList.add('hidden');
-                document.getElementById('view-settings').classList.remove('hidden');
-            } else {
-                document.getElementById('view-settings').classList.add('hidden');
-                document.getElementById('view-works').classList.remove('hidden');
-                renderList();
-            }
-        };
-
-        function renderList() {
-            const container = document.getElementById('sortable-list');
-            container.innerHTML = '';
-            const filtered = allWorks.filter(w => w.category === currentView);
-            
-            if(filtered.length === 0) {
-                container.innerHTML = '<div class="col-span-full py-10 text-center text-gray-400 font-bold">目前無作品，請從左側新增。</div>';
-                return;
-            }
-
-            filtered.forEach((work, index) => {
-                const badgeColor = work.category === 'video' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
-                const el = document.createElement('div');
-                el.className = "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group relative";
-                el.setAttribute('data-id', work.id);
-                el.innerHTML = `
-                    <div class="h-40 relative">
-                        <img src="${work.imageUrl}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-4">
-                            <div class="drag-handle bg-white text-gray-800 w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition" title="拖曳排序"><i class="fas fa-bars"></i></div>
-                            <div onclick="deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition" title="刪除"><i class="fas fa-trash"></i></div>
+                // work.imageUrl 這裡會直接讀取您貼入的 imgur 等外部網址
+                const itemHTML = `
+                    <div class="portfolio-item ${colSpan} ${heightClass} fade-up in-view" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                        <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover portfolio-img" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">
+                        <div class="portfolio-overlay">
+                            <p class="text-xs tracking-widest text-gray-300 mb-2 uppercase">${categoryLabel}</p>
+                            <h3 class="text-2xl md:text-3xl lg:text-4xl serif-tc">${work.title}</h3>
                         </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${badgeColor} uppercase tracking-wider">${work.category}</span>
-                            <span class="text-xs text-gray-400 font-mono">#${index + 1}</span>
-                        </div>
-                        <h3 class="font-bold text-gray-800 truncate">${work.title}</h3>
                     </div>
                 `;
-                container.appendChild(el);
-            });
-
-            if(sortableInstance) sortableInstance.destroy();
-            sortableInstance = new Sortable(container, {
-                handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost',
-                onEnd: function () { document.getElementById('btn-save-order').classList.remove('hidden'); }
+                grid.insertAdjacentHTML('beforeend', itemHTML);
             });
         }
 
-        // 儲存排序
-        document.getElementById('btn-save-order').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-save-order');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>儲存中...'; btn.disabled = true;
-
-            const items = document.querySelectorAll('#sortable-list > div');
-            const batch = writeBatch(db);
-            
-            items.forEach((item, index) => {
-                const id = item.getAttribute('data-id');
-                batch.update(doc(db, "jayran_works", id), { order: index });
-                const work = allWorks.find(w => w.id === id);
-                if(work) work.order = index;
-            });
-
-            try {
-                await batch.commit();
-                allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-                btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存';
-            } catch (error) {
-                console.error(error);
-                alert("排序儲存失敗！請檢查資料庫權限。");
-                btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序';
-            } finally {
-                setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000);
-                renderList();
-            }
+        // 互動動畫腳本
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item')) { cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; cursor.style.backgroundColor = 'rgba(255,255,255,0.1)'; } 
+            else { cursor.style.transform = 'translate(-50%, -50%) scale(1)'; cursor.style.backgroundColor = 'transparent'; }
         });
-
-        window.deleteWork = async function(id) {
-            if(!confirm('確定要刪除這份作品嗎？')) return;
-            showLoader("刪除中...");
-            try {
-                await deleteDoc(doc(db, "jayran_works", id));
-                allWorks = allWorks.filter(w => w.id !== id);
-                renderList();
-            } catch (error) {
-                alert("刪除失敗！權限不足。");
-            } finally {
-                hideLoader(); 
-            }
-        };
-
-        // 【更新：拔除作品圖片上傳的計時器防呆】
-        document.getElementById('btn-submit').addEventListener('click', async () => {
-            const title = document.getElementById('w-title').value.trim();
-            const category = document.querySelector('input[name="w-cat"]:checked').value;
-            const fileInput = document.getElementById('w-file');
-            const link = document.getElementById('w-link').value.trim();
-
-            if (!title) return alert("請輸入標題");
-            if (fileInput.files.length === 0) return alert("請上傳一張圖片");
-
-            const file = fileInput.files[0];
-            if(file.size > 15 * 1024 * 1024) {
-                if(!confirm("這張圖片超過 15MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
-            }
-
-            showUploadToast(file.name);
-                const submitBtn = document.getElementById('btn-submit');
-                submitBtn.disabled = true;
-                submitBtn.innerText = '背景上傳中...';
-
-            try {
-                const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
-                const storageRef = ref(storage, 'portfolio_images/' + safeName);
-                
-              // 匠人終極升級：斷點續傳與即時進度 %
-                const downloadURL = await new Promise((resolve, reject) => {
-                    const uploadTask = uploadBytesResumable(storageRef, file);
-                    uploadTask.on('state_changed', 
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            document.getElementById('upload-toast-filename').innerText = `${file.name} - 進度 ${Math.round(progress)}%`;
-                        }, 
-                        (error) => reject(error), 
-                        async () => { resolve(await getDownloadURL(uploadTask.snapshot.ref)); }
-                    );
-                });
-
-                // 寫入到 Database
-                const catWorks = allWorks.filter(w => w.category === category);
-                const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
-                const newDocData = { title: title, category: category, imageUrl: downloadURL, link: link, order: maxOrder + 1, createdAt: Date.now() };
-                
-                const docRef = await addDoc(collection(db, "jayran_works"), newDocData);
-                allWorks.push({ id: docRef.id, ...newDocData });
-                
-                document.getElementById('w-title').value = '';
-                document.getElementById('w-link').value = '';
-                fileInput.value = '';
-                document.getElementById('file-name').innerText = "點擊或拖曳圖片至此";
-                document.getElementById('file-name').classList.remove('text-blue-600');
-                
-                document.querySelector(`button[onclick="switchView('${category}', this)"]`).click();
-                
-            } catch (error) {
-                console.error("Upload Error:", error);
-                alert("⛔ 發佈失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
-            } finally {
-               hideUploadToast();
-                const submitBtn = document.getElementById('btn-submit');
-                submitBtn.disabled = false;
-                submitBtn.innerText = '確認發佈';
-            }
-        });
-
-        function showLoader(text) { document.getElementById('loader-text').innerText = text; document.getElementById('loader').style.display = 'flex'; }
-        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
-        
-        // 控制右下角背景上傳的函數
-        function showUploadToast(filename) {
-            const toast = document.getElementById('upload-toast');
-            document.getElementById('upload-toast-filename').innerText = filename;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-        }
-        function hideUploadToast() {
-            document.getElementById('upload-toast').classList.add('translate-y-20', 'opacity-0');
-        }
-
+        const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
+        const observeElements = () => { document.querySelectorAll('.fade-up:not(.in-view)').forEach(el => observer.observe(el)); };
+        new MutationObserver(observeElements).observe(document.getElementById('portfolio-grid'), { childList: true });
+        setTimeout(observeElements, 500);
     </script>
 </body>
 </html>
