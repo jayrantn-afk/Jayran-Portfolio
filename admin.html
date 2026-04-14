@@ -20,10 +20,12 @@
 </head>
 <body class="h-screen overflow-hidden text-gray-800">
 
+    <!-- 登入遮罩 -->
     <div id="login-overlay">
         <div class="text-4xl font-black mb-8 tracking-widest text-white uppercase">Jayran Admin</div>
-        <input id="login-pwd" type="password" class="p-4 text-center text-black text-xl font-bold rounded-2xl w-80 mb-6 outline-none shadow-lg" placeholder="輸入後台密碼">
-        <button id="btn-login" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-4 rounded-2xl font-bold text-xl shadow-lg transition">登入管理中心</button>
+        <input id="login-pwd" type="password" class="p-4 text-center text-black text-xl font-bold rounded-2xl w-80 mb-4 outline-none shadow-lg" placeholder="輸入後台密碼">
+        <div id="login-error" class="text-red-500 font-bold mb-4 hidden">密碼錯誤，請重新輸入</div>
+        <button id="btn-login" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-4 rounded-2xl font-bold text-xl shadow-lg transition cursor-pointer">登入管理中心</button>
     </div>
 
     <div id="loader" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[9000] hidden flex-col justify-center items-center">
@@ -60,8 +62,8 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">上傳封面圖 <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition relative">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">上傳封面圖 (可傳 GIF/PNG/JPG) <span class="text-red-500">*</span></label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition relative cursor-pointer">
                             <input type="file" id="w-file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                             <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
                             <div id="file-name" class="text-sm font-bold text-gray-600">點擊或拖曳圖片至此</div>
@@ -86,6 +88,9 @@
                 <button class="font-bold text-blue-600 border-b-2 border-blue-600 px-3 pb-2 text-lg" onclick="switchView('video', this)">影像專案</button>
                 <button class="font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('graphic', this)">圖文專案</button>
                 <button class="font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('settings', this)"><i class="fas fa-cog mr-1"></i>網站前台設定</button>
+                <div class="flex-1"></div>
+                <!-- 登出按鈕 -->
+                <button onclick="adminLogout()" class="text-gray-400 hover:text-red-500 font-bold text-sm px-3 pb-2"><i class="fas fa-sign-out-alt mr-1"></i>登出</button>
             </div>
 
             <!-- 作品排序區塊 -->
@@ -107,11 +112,23 @@
             <!-- 網站設定區塊 -->
             <div id="view-settings" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 max-w-3xl">
-                    <h2 class="text-2xl font-black mb-6 border-b pb-4">網站文字與外觀設定</h2>
+                    <h2 class="text-2xl font-black mb-6 border-b pb-4">網站視覺與文字設定</h2>
                     
                     <div class="space-y-6">
+                        <!-- 新增：背景大圖設定 -->
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖 (Hero Background)</h3>
+                            <div>
+                                <label class="block text-xs font-bold text-blue-600 mb-1">上傳新背景 (支援 JPG, PNG, GIF 動態圖)</label>
+                                <div class="flex items-center gap-4">
+                                    <input type="file" id="set-hero-bg" accept="image/*" class="w-full bg-white border border-blue-200 p-2 rounded-lg text-sm cursor-pointer">
+                                </div>
+                                <p class="text-xs text-blue-500 mt-2 font-bold">※ 若不更換請留空。建議尺寸：1920x1080 以上。</p>
+                            </div>
+                        </div>
+
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-blue-500"></i>首頁大標題 (Hero Section)</h3>
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-gray-500"></i>首頁大標題 (Hero Section)</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 mb-1">第一行 (粗體)</label>
@@ -129,7 +146,7 @@
                         </div>
 
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-blue-500"></i>作品區標題</h3>
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-gray-500"></i>作品區標題</h3>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 mb-1">英文主標 (可使用 &lt;br&gt; 換行)</label>
                                 <input id="set-sec-title" class="w-full border p-3 rounded-lg font-bold" placeholder="Selected<br>Works.">
@@ -137,7 +154,7 @@
                         </div>
 
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-blue-500"></i>頁尾聯絡資訊</h3>
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-gray-500"></i>頁尾聯絡資訊</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 mb-1">聯絡標語</label>
@@ -151,7 +168,7 @@
                         </div>
 
                         <button id="btn-save-settings-db" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1">
-                            <i class="fas fa-save mr-2"></i>儲存並同步至前台
+                            <i class="fas fa-save mr-2"></i>儲存設定並同步至前台
                         </button>
                     </div>
                 </div>
@@ -181,17 +198,57 @@
         let currentView = 'video';
         let sortableInstance = null;
 
-        // 登入
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const pwd = document.getElementById('login-pwd').value;
-            if(pwd === 'jayran2026') {
+        // 【記憶密碼機制】12小時內免重新登入
+        const SESSION_HOURS = 12;
+        window.onload = () => {
+            const savedLogin = localStorage.getItem('jayran_admin_auth');
+            if (savedLogin && (Date.now() - savedLogin < SESSION_HOURS * 60 * 60 * 1000)) {
                 document.getElementById('login-overlay').style.display = 'none';
-                showLoader("連接資料庫中...");
-                await fetchData();
-                await fetchSettings();
-                hideLoader();
-            } else { alert('密碼錯誤'); }
+                initAdminData();
+            }
+        };
+
+        // 登入邏輯與 Enter 鍵綁定
+        const btnLogin = document.getElementById('btn-login');
+        const loginPwd = document.getElementById('login-pwd');
+        const loginError = document.getElementById('login-error');
+
+        const doLogin = async () => {
+            const pwd = loginPwd.value;
+            // 密碼已更新為 00430552
+            if(pwd === '00430552') {
+                loginError.classList.add('hidden');
+                localStorage.setItem('jayran_admin_auth', Date.now()); // 紀錄登入時間
+                document.getElementById('login-overlay').style.display = 'none';
+                initAdminData();
+            } else { 
+                // 預覽器會阻擋 alert，改用畫面紅字優雅提示
+                loginError.classList.remove('hidden'); 
+            }
+        };
+
+        btnLogin.addEventListener('click', doLogin);
+
+        // 監聽 Enter 鍵
+        loginPwd.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doLogin();
+            }
         });
+
+        // 登出按鈕
+        window.adminLogout = function() {
+            localStorage.removeItem('jayran_admin_auth');
+            location.reload();
+        };
+
+        async function initAdminData() {
+            showLoader("連接資料庫中...");
+            await fetchData();
+            await fetchSettings();
+            hideLoader();
+        }
 
         // 顯示選擇的檔名
         document.getElementById('w-file').addEventListener('change', function(e) {
@@ -225,14 +282,12 @@
                     if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
                     if(data.email) document.getElementById('set-contact-email').value = data.email;
                 }
-            } catch (error) {
-                console.error("Settings Read Error:", error);
-            }
+            } catch (error) { console.error("Settings Read Error:", error); }
         }
 
-        // 儲存網站設定 (加入 try-catch 徹底解決無限轉圈圈)
+        // 【新增：背景大圖上傳與設定儲存】
         document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
-            showLoader("儲存設定中...");
+            showLoader("儲存設定並處理圖片中...");
             const data = {
                 h1: document.getElementById('set-h1').value || "Crafting Visual",
                 h2: document.getElementById('set-h2').value || "Masterpieces.",
@@ -243,11 +298,44 @@
             };
             
             try {
+                // 檢查是否有上傳新的背景圖
+                const bgFileInput = document.getElementById('set-hero-bg');
+                if (bgFileInput.files.length > 0) {
+                    const bgFile = bgFileInput.files[0];
+                    // 警告閥值提升至 15MB
+                    if (bgFile.size > 15 * 1024 * 1024) {
+                        if (!confirm("背景圖片超過 15MB，上傳可能較久，確定繼續嗎？")) {
+                            hideLoader(); return;
+                        }
+                    }
+                    const safeName = 'hero_' + Date.now() + '_' + bgFile.name.replace(/[^a-zA-Z0-9.]/g, '');
+                    const storageRef = ref(storage, 'settings_images/' + safeName);
+                    
+                    // 超時設定提升至 60 秒
+                    const uploadTask = uploadBytes(storageRef, bgFile);
+                    const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 60000));
+                    await Promise.race([uploadTask, timeoutTask]);
+                    
+                    data.heroBg = await getDownloadURL(storageRef);
+                    bgFileInput.value = ''; // 上傳成功後清空 input
+                } else {
+                    // 若沒上傳新圖，保留舊圖的 URL
+                    const docRef = doc(db, "jayran_settings", "frontend");
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists() && docSnap.data().heroBg) {
+                        data.heroBg = docSnap.data().heroBg;
+                    }
+                }
+
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
                 alert("✅ 網站設定已更新！前台已同步。");
             } catch (error) {
                 console.error("Settings Write Error:", error);
-                alert("⛔ 儲存失敗！\n這通常是因為 Firebase 的「Firestore Database」規則尚未開放。\n請確保您設定的是 Database 的規則，而非 Storage。");
+                if(error.message === "TIMEOUT") {
+                    alert("⛔ 上傳超時！這可能因為圖檔過大或網路較慢，請稍後再試。");
+                } else {
+                    alert("⛔ 儲存失敗！請確保資料庫與 Storage 權限皆已開放。");
+                }
             } finally {
                 hideLoader();
             }
@@ -257,7 +345,7 @@
         window.switchView = function(type, btnEl) {
             currentView = type;
             const buttons = btnEl.parentElement.children;
-            for(let btn of buttons) { btn.className = "font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800"; }
+            for(let i=0; i<3; i++) { buttons[i].className = "font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800"; }
             btnEl.className = "font-bold text-blue-600 border-b-2 border-blue-600 px-3 pb-2 text-lg";
             
             if (type === 'settings') {
@@ -354,7 +442,7 @@
             }
         };
 
-        // 發佈新作品 (含防呆除錯與 Timeout)
+        // 發佈新作品 (含 60秒 超時與 15MB 防呆)
         document.getElementById('btn-submit').addEventListener('click', async () => {
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
@@ -365,8 +453,9 @@
             if (fileInput.files.length === 0) return alert("請上傳一張圖片");
 
             const file = fileInput.files[0];
-            if(file.size > 5 * 1024 * 1024) {
-                if(!confirm("這張圖片超過 5MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
+            // 提升至 15MB 才警告
+            if(file.size > 15 * 1024 * 1024) {
+                if(!confirm("這張圖片超過 15MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
             }
 
             showLoader("上傳圖檔與寫入資料中...");
@@ -375,9 +464,9 @@
                 const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
                 const storageRef = ref(storage, 'portfolio_images/' + safeName);
                 
-                // 上傳到 Storage
+                // 上傳到 Storage (超時延長至 60 秒)
                 const uploadTask = uploadBytes(storageRef, file);
-                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000));
+                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 60000));
                 await Promise.race([uploadTask, timeoutTask]);
                 const downloadURL = await getDownloadURL(storageRef);
 
@@ -400,7 +489,7 @@
             } catch (error) {
                 console.error("Upload Error:", error);
                 if(error.message === "TIMEOUT") {
-                    alert("⛔ 上傳超時！請檢查 Firebase Storage 規則是否開放。");
+                    alert("⛔ 上傳超時！這可能是因為檔案太大或網路速度較慢，請確認網路狀態後重試。");
                 } else {
                     alert("⛔ 發佈失敗！請確保「Firestore Database」與「Storage」規則皆已改為 true。\n錯誤碼：" + error.message);
                 }
