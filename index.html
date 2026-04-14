@@ -12,31 +12,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 基礎色彩與字體設定，保持最高質感 */
         :root { --bg-color: #050505; --text-main: #f5f5f5; --text-muted: #888888; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
         h1, h2, h3, .serif-tc { font-family: 'Playfair Display', 'Noto Serif TC', serif; }
         
-        /* 捲軸美化 */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
 
-        /* 專屬高階游標 */
         .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
 
-        /* 視差與淡入動畫 */
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-up.in-view { opacity: 1; transform: translateY(0); }
 
-        /* 網格圖片 Hover 特效 */
+        /* 圖文作品 Hover 特效 */
         .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
         .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.7) grayscale(0.3); }
         .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1) grayscale(0); }
         .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 2.5rem; }
         .portfolio-item:hover .portfolio-overlay { opacity: 1; }
 
-        /* 分類按鈕 Hover 線條動畫 */
+        /* 影片作品特效 */
+        .video-item { overflow: hidden; position: relative; cursor: pointer; background-color: #000; }
+        .video-item .video-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 40%, transparent 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.5rem; z-index: 2; transition: background 0.5s ease; }
+        .video-item .play-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; opacity: 0; transition: opacity 0.4s ease; }
+        .video-item:hover .play-hint { opacity: 1; }
+        .video-item iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+
         .filter-btn { position: relative; color: var(--text-muted); transition: color 0.3s ease; padding-bottom: 4px; }
         .filter-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--text-main); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .filter-btn:hover, .filter-btn.active { color: var(--text-main); }
@@ -92,7 +94,8 @@
             <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
             <div class="flex gap-6 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light">
                 <button class="filter-btn active" onclick="filterWorks('all')">All</button>
-                <button class="filter-btn" onclick="filterWorks('video')">Video (影像)</button>
+                <button class="filter-btn" onclick="filterWorks('animation')">Animation (動畫)</button>
+                <button class="filter-btn" onclick="filterWorks('video')">Video (影音)</button>
                 <button class="filter-btn" onclick="filterWorks('graphic')">Graphic (圖文)</button>
             </div>
         </div>
@@ -131,7 +134,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
+
         function handleFirebaseError(error) {
             console.error("Firebase 讀取失敗:", error);
             const loader = document.getElementById('global-loader');
@@ -142,51 +145,53 @@
             }
         }
 
-        // 1. 抓取動態文字與直連背景圖網址
+        // ========= YouTube 工具 =========
+        function extractYouTubeId(url) {
+            if (!url) return null;
+            let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : null;
+        }
+
+        // ========= 動態文字設定 =========
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                
-                // 動態修改首頁背景圖 (讀取外部網址)
-                if(data.heroBg) {
-                    document.getElementById('hero-bg-img').src = data.heroBg;
-                }
-
-                if(data.h1 || data.h2) {
+                if (data.heroBg) document.getElementById('hero-bg-img').src = data.heroBg;
+                if (data.h1 || data.h2) {
                     document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
                 }
-                if(data.sub) document.getElementById('dyn-sub').innerText = data.sub;
-                if(data.secTitle) document.getElementById('dyn-sec-title').innerHTML = data.secTitle;
-                if(data.contactText) {
+                if (data.sub) document.getElementById('dyn-sub').innerText = data.sub;
+                if (data.secTitle) document.getElementById('dyn-sec-title').innerHTML = data.secTitle;
+                if (data.contactText) {
                     const words = data.contactText.split(' ');
-                    if(words.length > 2) {
+                    if (words.length > 2) {
                         const lastTwo = words.splice(-2).join(' ');
                         document.getElementById('dyn-contact-text').innerHTML = `${words.join(' ')} <span class="text-white">${lastTwo}</span>`;
                     } else {
                         document.getElementById('dyn-contact-text').innerHTML = data.contactText;
                     }
                 }
-                if(data.email) {
+                if (data.email) {
                     document.getElementById('dyn-contact-email').innerText = data.email;
                     document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
                 }
             }
         }, handleFirebaseError);
 
-        // 2. 抓取作品集資料 (讀取圖片網址)
+        // ========= 作品集 =========
         let allWorks = [];
         let currentFilter = 'all';
 
         onSnapshot(collection(db, "jayran_works"), (snapshot) => {
-            allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            allWorks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
             renderPortfolio();
 
             const loader = document.getElementById('global-loader');
-            if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
+            if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
         }, handleFirebaseError);
 
-        window.filterWorks = function(type) {
+        window.filterWorks = function (type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -205,37 +210,71 @@
                 let colSpan = 'col-span-1 md:col-span-6';
                 let heightClass = 'h-[50vh] md:h-[60vh]';
 
-                // 非對稱排版邏輯
                 if (index % 4 === 0) { colSpan = 'col-span-1 md:col-span-8'; heightClass = 'h-[50vh] md:h-[70vh]'; }
                 else if (index % 4 === 1) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[70vh]'; }
                 else if (index % 4 === 2) { colSpan = 'col-span-1 md:col-span-4'; heightClass = 'h-[50vh] md:h-[60vh]'; }
                 else if (index % 4 === 3) { colSpan = 'col-span-1 md:col-span-8'; heightClass = 'h-[50vh] md:h-[60vh]'; }
 
-                const categoryLabel = work.category === 'video' ? 'Cinematography' : 'Graphic Design';
-                const clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
+                const isVideo = work.category === 'animation' || work.category === 'video';
+                const ytId = isVideo ? (work.youtubeId || extractYouTubeId(work.youtubeUrl || work.link)) : null;
 
-                // work.imageUrl 這裡會直接讀取您貼入的 imgur 等外部網址
-                const itemHTML = `
-                    <div class="portfolio-item ${colSpan} ${heightClass} fade-up in-view" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
-                        <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover portfolio-img" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">
-                        <div class="portfolio-overlay">
-                            <p class="text-xs tracking-widest text-gray-300 mb-2 uppercase">${categoryLabel}</p>
-                            <h3 class="text-2xl md:text-3xl lg:text-4xl serif-tc">${work.title}</h3>
+                const categoryLabels = {
+                    animation: 'Animation',
+                    video: 'Cinematography',
+                    graphic: 'Graphic Design'
+                };
+                const categoryLabel = categoryLabels[work.category] || 'Work';
+
+                let itemHTML = '';
+
+                if (isVideo && ytId) {
+                    // ===== 影片作品：嵌入 YouTube 預覽 =====
+                    const ytLink = work.youtubeUrl || work.link || `https://www.youtube.com/watch?v=${ytId}`;
+                    itemHTML = `
+                        <div class="video-item ${colSpan} ${heightClass} fade-up in-view" onclick="window.open('${ytLink}', '_blank')" style="animation: fadeIn 0.8s ease forwards;">
+                            <iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1" 
+                                allow="autoplay; encrypted-media" loading="lazy"></iframe>
+                            <div class="play-hint">
+                                <div class="bg-white/20 backdrop-blur-sm rounded-full w-16 h-16 flex items-center justify-center border border-white/30">
+                                    <i class="fab fa-youtube text-white text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="video-overlay">
+                                <p class="text-xs tracking-widest text-gray-300 mb-2 uppercase">${categoryLabel}</p>
+                                <h3 class="text-2xl md:text-3xl lg:text-4xl serif-tc">${work.title}</h3>
+                                <p class="text-xs text-gray-400 mt-2 tracking-wider"><i class="fab fa-youtube mr-1"></i>點擊觀看完整影片</p>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // ===== 圖文作品：圖片展示 =====
+                    const clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
+                    itemHTML = `
+                        <div class="portfolio-item ${colSpan} ${heightClass} fade-up in-view" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                            <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover portfolio-img" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">
+                            <div class="portfolio-overlay">
+                                <p class="text-xs tracking-widest text-gray-300 mb-2 uppercase">${categoryLabel}</p>
+                                <h3 class="text-2xl md:text-3xl lg:text-4xl serif-tc">${work.title}</h3>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 grid.insertAdjacentHTML('beforeend', itemHTML);
             });
         }
 
-        // 互動動畫腳本
+        // ========= 互動動畫 =========
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
         document.addEventListener('mouseover', (e) => {
-            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item')) { cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; cursor.style.backgroundColor = 'rgba(255,255,255,0.1)'; } 
-            else { cursor.style.transform = 'translate(-50%, -50%) scale(1)'; cursor.style.backgroundColor = 'transparent'; }
+            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item') || e.target.closest('.video-item')) {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; cursor.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            } else {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)'; cursor.style.backgroundColor = 'transparent';
+            }
         });
-        const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
+        const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
         const observeElements = () => { document.querySelectorAll('.fade-up:not(.in-view)').forEach(el => observer.observe(el)); };
         new MutationObserver(observeElements).observe(document.getElementById('portfolio-grid'), { childList: true });
         setTimeout(observeElements, 500);
