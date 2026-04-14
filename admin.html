@@ -182,12 +182,14 @@
         let sortableInstance = null;
 
         // 登入
-        document.getElementById('btn-login').addEventListener('click', () => {
+        document.getElementById('btn-login').addEventListener('click', async () => {
             const pwd = document.getElementById('login-pwd').value;
             if(pwd === 'jayran2026') {
                 document.getElementById('login-overlay').style.display = 'none';
-                fetchData();
-                fetchSettings();
+                showLoader("連接資料庫中...");
+                await fetchData();
+                await fetchSettings();
+                hideLoader();
             } else { alert('密碼錯誤'); }
         });
 
@@ -199,27 +201,36 @@
         });
 
         async function fetchData() {
-            const querySnapshot = await getDocs(collection(db, "jayran_works"));
-            allWorks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-            renderList();
-        }
-
-        async function fetchSettings() {
-            const docRef = doc(db, "jayran_settings", "frontend");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if(data.h1) document.getElementById('set-h1').value = data.h1;
-                if(data.h2) document.getElementById('set-h2').value = data.h2;
-                if(data.sub) document.getElementById('set-sub').value = data.sub;
-                if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
-                if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
-                if(data.email) document.getElementById('set-contact-email').value = data.email;
+            try {
+                const querySnapshot = await getDocs(collection(db, "jayran_works"));
+                allWorks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
+                renderList();
+            } catch (error) {
+                console.error("Firestore Read Error:", error);
+                alert("⛔ 讀取作品失敗！請確保 Firestore Database 規則已設定為 allow read, write: if true;");
             }
         }
 
-        // 儲存網站設定
+        async function fetchSettings() {
+            try {
+                const docRef = doc(db, "jayran_settings", "frontend");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.h1) document.getElementById('set-h1').value = data.h1;
+                    if(data.h2) document.getElementById('set-h2').value = data.h2;
+                    if(data.sub) document.getElementById('set-sub').value = data.sub;
+                    if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
+                    if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
+                    if(data.email) document.getElementById('set-contact-email').value = data.email;
+                }
+            } catch (error) {
+                console.error("Settings Read Error:", error);
+            }
+        }
+
+        // 儲存網站設定 (加入 try-catch 徹底解決無限轉圈圈)
         document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
             showLoader("儲存設定中...");
             const data = {
@@ -230,9 +241,16 @@
                 contactText: document.getElementById('set-contact-text').value || "Ready to start your project?",
                 email: document.getElementById('set-contact-email').value || "hello@jayran.studio"
             };
-            await setDoc(doc(db, "jayran_settings", "frontend"), data);
-            hideLoader();
-            alert("✅ 網站設定已更新！前台已同步。");
+            
+            try {
+                await setDoc(doc(db, "jayran_settings", "frontend"), data);
+                alert("✅ 網站設定已更新！前台已同步。");
+            } catch (error) {
+                console.error("Settings Write Error:", error);
+                alert("⛔ 儲存失敗！\n這通常是因為 Firebase 的「Firestore Database」規則尚未開放。\n請確保您設定的是 Database 的規則，而非 Storage。");
+            } finally {
+                hideLoader();
+            }
         });
 
         // 切換分類與面板
@@ -308,20 +326,32 @@
                 if(work) work.order = index;
             });
 
-            await batch.commit();
-            allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-            
-            btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存';
-            setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000);
-            renderList();
+            try {
+                await batch.commit();
+                allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存';
+            } catch (error) {
+                console.error(error);
+                alert("排序儲存失敗！請檢查資料庫權限。");
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序';
+            } finally {
+                setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000);
+                renderList();
+            }
         });
 
         window.deleteWork = async function(id) {
             if(!confirm('確定要刪除這份作品嗎？')) return;
             showLoader("刪除中...");
-            await deleteDoc(doc(db, "jayran_works", id));
-            allWorks = allWorks.filter(w => w.id !== id);
-            hideLoader(); renderList();
+            try {
+                await deleteDoc(doc(db, "jayran_works", id));
+                allWorks = allWorks.filter(w => w.id !== id);
+                renderList();
+            } catch (error) {
+                alert("刪除失敗！權限不足。");
+            } finally {
+                hideLoader(); 
+            }
         };
 
         // 發佈新作品 (含防呆除錯與 Timeout)
@@ -335,31 +365,28 @@
             if (fileInput.files.length === 0) return alert("請上傳一張圖片");
 
             const file = fileInput.files[0];
-            
-            // 防呆：檔案大於 5MB 警告
             if(file.size > 5 * 1024 * 1024) {
                 if(!confirm("這張圖片超過 5MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
             }
 
-            showLoader("上傳圖檔中，請稍候...");
+            showLoader("上傳圖檔與寫入資料中...");
 
             try {
                 const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
                 const storageRef = ref(storage, 'portfolio_images/' + safeName);
                 
-                // 加入 Promise.race 避免無限卡住跑圈圈
+                // 上傳到 Storage
                 const uploadTask = uploadBytes(storageRef, file);
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000));
-                
                 await Promise.race([uploadTask, timeoutTask]);
                 const downloadURL = await getDownloadURL(storageRef);
 
+                // 寫入到 Database
                 const catWorks = allWorks.filter(w => w.category === category);
                 const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
-
                 const newDocData = { title: title, category: category, imageUrl: downloadURL, link: link, order: maxOrder + 1, createdAt: Date.now() };
-                const docRef = await addDoc(collection(db, "jayran_works"), newDocData);
                 
+                const docRef = await addDoc(collection(db, "jayran_works"), newDocData);
                 allWorks.push({ id: docRef.id, ...newDocData });
                 
                 document.getElementById('w-title').value = '';
@@ -373,9 +400,9 @@
             } catch (error) {
                 console.error("Upload Error:", error);
                 if(error.message === "TIMEOUT") {
-                    alert("⛔ 上傳超時！\n這通常是因為 Firebase Storage 的安全規則沒有開啟。\n請至 Firebase > Storage > Rules，將規則改為 allow read, write: if true;");
+                    alert("⛔ 上傳超時！請檢查 Firebase Storage 規則是否開放。");
                 } else {
-                    alert("⛔ 上傳失敗！\n錯誤原因：" + error.message + "\n請確認 Firebase 權限是否正確設定。");
+                    alert("⛔ 發佈失敗！請確保「Firestore Database」與「Storage」規則皆已改為 true。\n錯誤碼：" + error.message);
                 }
             } finally {
                 hideLoader();
