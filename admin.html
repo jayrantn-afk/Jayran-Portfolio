@@ -33,6 +33,14 @@
         <div id="loader-text" class="text-lg font-bold text-gray-700 tracking-widest">資料處理中...</div>
     </div>
 
+    <div id="upload-toast" class="fixed bottom-6 right-6 bg-white border border-gray-200 shadow-2xl rounded-xl p-4 flex items-center gap-4 transition-all transform translate-y-20 opacity-0 z-[9999] duration-500 pointer-events-none">
+        <i class="fas fa-circle-notch fa-spin text-blue-600 text-3xl"></i>
+        <div>
+            <div class="text-sm font-black text-gray-800 tracking-widest">檔案背景上傳中...</div>
+            <div id="upload-toast-filename" class="text-xs text-gray-500 w-48 truncate font-bold mt-1"></div>
+        </div>
+    </div>
+
     <div class="flex h-full">
         <!-- 左側面板 -->
         <aside class="w-96 bg-white shadow-2xl flex flex-col z-10">
@@ -287,7 +295,12 @@
 
         // 【更新：拔除背景大圖上傳的計時器防呆】
         document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
-            showLoader("儲存設定並處理圖片中，請稍候...");
+            const bgFileInput = document.getElementById('set-hero-bg');
+            const fileName = bgFileInput.files.length > 0 ? bgFileInput.files[0].name : '純文字設定更新';
+            showUploadToast(fileName);
+            const saveBtn = document.getElementById('btn-save-settings-db');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>背景上傳中...';
             const data = {
                 h1: document.getElementById('set-h1').value || "Crafting Visual",
                 h2: document.getElementById('set-h2').value || "Masterpieces.",
@@ -304,7 +317,10 @@
                     const bgFile = bgFileInput.files[0];
                     if (bgFile.size > 15 * 1024 * 1024) {
                         if (!confirm("背景圖片超過 15MB，上傳可能會需要比較久的時間，確定繼續嗎？")) {
-                            hideLoader(); return;
+                           hideUploadToast();
+                            const saveBtn = document.getElementById('btn-save-settings-db');
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存設定並同步至前台'; return;
                         }
                     }
                     const safeName = 'hero_' + Date.now() + '_' + bgFile.name.replace(/[^a-zA-Z0-9.]/g, '');
@@ -328,8 +344,11 @@
             } catch (error) {
                 console.error("Settings Write Error:", error);
                 alert("⛔ 儲存失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
-            } finally {
-                hideLoader();
+     } finally {
+                hideUploadToast();
+                const saveBtn = document.getElementById('btn-save-settings-db');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存設定並同步至前台';
             }
         });
 
@@ -449,7 +468,10 @@
                 if(!confirm("這張圖片超過 15MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
             }
 
-            showLoader("上傳圖檔與寫入資料中，大檔案可能需要數分鐘，請勿關閉視窗...");
+            showUploadToast(file.name);
+                const submitBtn = document.getElementById('btn-submit');
+                submitBtn.disabled = true;
+                submitBtn.innerText = '背景上傳中...';
 
             try {
                 const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
@@ -479,12 +501,25 @@
                 console.error("Upload Error:", error);
                 alert("⛔ 發佈失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
             } finally {
-                hideLoader();
+               hideUploadToast();
+                const submitBtn = document.getElementById('btn-submit');
+                submitBtn.disabled = false;
+                submitBtn.innerText = '確認發佈';
             }
         });
 
         function showLoader(text) { document.getElementById('loader-text').innerText = text; document.getElementById('loader').style.display = 'flex'; }
         function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+        
+        // 控制右下角背景上傳的函數
+        function showUploadToast(filename) {
+            const toast = document.getElementById('upload-toast');
+            document.getElementById('upload-toast-filename').innerText = filename;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+        }
+        function hideUploadToast() {
+            document.getElementById('upload-toast').classList.add('translate-y-20', 'opacity-0');
+        }
 
     </script>
 </body>
