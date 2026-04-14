@@ -285,9 +285,9 @@
             } catch (error) { console.error("Settings Read Error:", error); }
         }
 
-        // 【新增：背景大圖上傳與設定儲存】
+        // 【更新：拔除背景大圖上傳的計時器防呆】
         document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
-            showLoader("儲存設定並處理圖片中...");
+            showLoader("儲存設定並處理圖片中，請稍候...");
             const data = {
                 h1: document.getElementById('set-h1').value || "Crafting Visual",
                 h2: document.getElementById('set-h2').value || "Masterpieces.",
@@ -302,20 +302,16 @@
                 const bgFileInput = document.getElementById('set-hero-bg');
                 if (bgFileInput.files.length > 0) {
                     const bgFile = bgFileInput.files[0];
-                    // 警告閥值提升至 15MB
                     if (bgFile.size > 15 * 1024 * 1024) {
-                        if (!confirm("背景圖片超過 15MB，上傳可能較久，確定繼續嗎？")) {
+                        if (!confirm("背景圖片超過 15MB，上傳可能會需要比較久的時間，確定繼續嗎？")) {
                             hideLoader(); return;
                         }
                     }
                     const safeName = 'hero_' + Date.now() + '_' + bgFile.name.replace(/[^a-zA-Z0-9.]/g, '');
                     const storageRef = ref(storage, 'settings_images/' + safeName);
                     
-                    // 超時設定提升至 60 秒
-                    const uploadTask = uploadBytes(storageRef, bgFile);
-                    const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 60000));
-                    await Promise.race([uploadTask, timeoutTask]);
-                    
+                    // 匠人修復：拔除 Timeout 限制，讓 Firebase 原生處理上傳，無論多久都等它傳完
+                    await uploadBytes(storageRef, bgFile);
                     data.heroBg = await getDownloadURL(storageRef);
                     bgFileInput.value = ''; // 上傳成功後清空 input
                 } else {
@@ -331,11 +327,7 @@
                 alert("✅ 網站設定已更新！前台已同步。");
             } catch (error) {
                 console.error("Settings Write Error:", error);
-                if(error.message === "TIMEOUT") {
-                    alert("⛔ 上傳超時！這可能因為圖檔過大或網路較慢，請稍後再試。");
-                } else {
-                    alert("⛔ 儲存失敗！請確保資料庫與 Storage 權限皆已開放。");
-                }
+                alert("⛔ 儲存失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
             } finally {
                 hideLoader();
             }
@@ -442,7 +434,7 @@
             }
         };
 
-        // 發佈新作品 (含 60秒 超時與 15MB 防呆)
+        // 【更新：拔除作品圖片上傳的計時器防呆】
         document.getElementById('btn-submit').addEventListener('click', async () => {
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
@@ -453,21 +445,18 @@
             if (fileInput.files.length === 0) return alert("請上傳一張圖片");
 
             const file = fileInput.files[0];
-            // 提升至 15MB 才警告
             if(file.size > 15 * 1024 * 1024) {
                 if(!confirm("這張圖片超過 15MB，上傳可能會需要比較久的時間，確定要繼續嗎？")) return;
             }
 
-            showLoader("上傳圖檔與寫入資料中...");
+            showLoader("上傳圖檔與寫入資料中，大檔案可能需要數分鐘，請勿關閉視窗...");
 
             try {
                 const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
                 const storageRef = ref(storage, 'portfolio_images/' + safeName);
                 
-                // 上傳到 Storage (超時延長至 60 秒)
-                const uploadTask = uploadBytes(storageRef, file);
-                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 60000));
-                await Promise.race([uploadTask, timeoutTask]);
+                // 匠人修復：拔除 Timeout 限制
+                await uploadBytes(storageRef, file);
                 const downloadURL = await getDownloadURL(storageRef);
 
                 // 寫入到 Database
@@ -488,11 +477,7 @@
                 
             } catch (error) {
                 console.error("Upload Error:", error);
-                if(error.message === "TIMEOUT") {
-                    alert("⛔ 上傳超時！這可能是因為檔案太大或網路速度較慢，請確認網路狀態後重試。");
-                } else {
-                    alert("⛔ 發佈失敗！請確保「Firestore Database」與「Storage」規則皆已改為 true。\n錯誤碼：" + error.message);
-                }
+                alert("⛔ 發佈失敗！\n錯誤碼：" + error.message + "\n\n如果您看到 permission_denied，請確認 Firebase Storage 與 Database 的規則皆已修改為 true。");
             } finally {
                 hideLoader();
             }
