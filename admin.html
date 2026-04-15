@@ -511,7 +511,7 @@
                 document.getElementById('w-youtube').value = work.youtubeUrl || work.link || '';
                 document.getElementById('w-youtube').dispatchEvent(new Event('input'));
             } else {
-                if(work.imageUrl && work.imageUrl.startsWith('data:image')) {
+                if(work.imageUrl) {
                     document.getElementById('w-img-base64').value = work.imageUrl;
                     document.getElementById('w-img-preview').src = work.imageUrl;
                     document.getElementById('w-img-preview').classList.remove('hidden');
