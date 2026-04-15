@@ -97,7 +97,7 @@
         </div>
         
         <!-- 更新為「瀑布流 (Masonry)」網格：保留圖片完美原始比例，不會變形或黑邊 -->
-        <div class="columns-1 md:columns-2 lg:columns-3 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid"></div>
+        <div class="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 md:gap-5 space-y-3 md:space-y-5" id="portfolio-grid"></div>
         <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品展示。</div>
     </section>
 
@@ -178,7 +178,7 @@
             renderPortfolio();
         };
 
-        function renderPortfolio() {
+    function renderPortfolio() {
             const grid = document.getElementById('portfolio-grid');
             const emptyState = document.getElementById('empty-state');
             grid.innerHTML = '';
@@ -197,7 +197,7 @@
                 let mediaHTML = '';
                 
                 if (isVideo && work.youtubeId) {
-                    // 【終極修復：自動判斷是否為 Shorts (9:16) 還是一般影片 (16:9)，完美去除黑邊，並恢復無聲自動輪播！】
+                    // 自動判斷是否為 Shorts (9:16) 還是一般影片 (16:9)，完美去除黑邊，並恢復無聲自動輪播！
                     const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
                     const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
                     
@@ -209,16 +209,17 @@
                             </iframe>
                         </div>`;
                 } else {
-                    // 圖文保留原比例，絕無黑邊
+                    // 圖文保留原比例
                     mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
                 }
 
+                // 標題字體與間距縮小 (text-base / p-4)，完美適應精緻小網格
                 const itemHTML = `
-                    <div class="portfolio-item break-inside-avoid rounded-xl mb-6 md:mb-8 fade-up in-view relative group cursor-pointer" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                    <div class="portfolio-item break-inside-avoid rounded-xl mb-3 md:mb-5 fade-up in-view relative group cursor-pointer" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
                         ${mediaHTML}
-                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                            <p class="text-[10px] tracking-widest text-gray-300 mb-1 uppercase">${categoryLabel}</p>
-                            <h3 class="text-xl md:text-2xl serif-tc text-white font-bold">${work.title}</h3>
+                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
+                            <p class="text-[9px] tracking-widest text-gray-300 mb-1 uppercase">${categoryLabel}</p>
+                            <h3 class="text-base md:text-lg serif-tc text-white font-bold leading-tight">${work.title}</h3>
                         </div>
                     </div>
                 `;
