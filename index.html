@@ -182,7 +182,7 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8" id="portfolio-grid-all"></div>
+        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid-all"></div>
         <div id="empty-state-all" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">此分類目前尚無作品。</div>
     </div>
 
@@ -208,7 +208,6 @@
 
             <div class="lg:col-span-3">
                 <form id="contact-form" class="space-y-8 bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-gray-900 relative overflow-hidden shadow-2xl">
-                    
                     <div id="form-success-msg" class="absolute inset-0 bg-[#0a0a0a] z-20 hidden flex-col items-center justify-center text-center px-8">
                         <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
                         <h3 class="text-2xl font-bold text-white mb-2">送出成功！</h3>
@@ -313,7 +312,7 @@
             }, 1500); 
         });
 
-        // 1. 抓取動態文字與背景圖
+        // 1. 抓取動態文字與背景
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -350,7 +349,7 @@
             }
         }, (error) => console.error(error));
 
-        // 透過 Formsubmit.co 發送信件 (不跳轉)
+        // 透過 Formsubmit API 背景發信
         window.sendEmail = function() {
             const name = document.getElementById('contact-name').value;
             const person = document.getElementById('contact-person').value;
@@ -404,11 +403,9 @@
             allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
             renderPortfolioHome();
             renderPortfolioAll();
-            const loader = document.getElementById('global-loader');
-            if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
         }, (error) => console.error(error));
 
-        // SPA 頁面切換邏輯
+        // SPA 頁面切換
         window.switchPage = function(pageId) {
             document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
             const targetPage = document.getElementById('page-' + pageId);
@@ -419,10 +416,7 @@
             if(activeNav) activeNav.classList.add('text-white');
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            if (pageId === 'work') {
-                renderPortfolioAll();
-            }
+            if (pageId === 'work') renderPortfolioAll();
         };
 
         window.openLightbox = function(url) {
@@ -459,7 +453,7 @@
             renderPortfolioAll();
         }
 
-        // 生成首頁精選 (固定 5 個)
+        // 首頁精選
         function renderPortfolioHome() {
             const grid = document.getElementById('portfolio-grid-home');
             grid.innerHTML = '';
@@ -471,7 +465,7 @@
             });
         }
 
-        // 生成 Works 頁面
+        // Works 分類總覽
         function renderPortfolioAll() {
             const grid = document.getElementById('portfolio-grid-all');
             const emptyState = document.getElementById('empty-state-all');
@@ -500,7 +494,7 @@
             });
         }
 
-        // 共用卡片生成邏輯 (加入背景虛化，解決黑邊)
+        // 共用卡片生成邏輯 (影片虛化背景防黑邊)
         function buildWorkCard(work, isHome) {
             let categoryLabel = 'Graphic Design';
             if(work.category === 'video') categoryLabel = 'Video Production';
@@ -514,20 +508,19 @@
             if (isVideo && work.youtubeId) {
                 clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
                 
-                // 利用 YouTube 縮圖當作背景虛化，盡量蓋過黑邊
                 const blurBgUrl = `https://img.youtube.com/vi/${work.youtubeId}/hqdefault.jpg`;
                 
                 mediaHTML = `
-                    <div class="w-full ${isHome ? 'aspect-square' : 'aspect-video'} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center">
+                    <div class="w-full ${isHome ? 'aspect-[3/4]' : 'aspect-video'} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center">
                         <div class="absolute inset-0 bg-cover bg-center opacity-50 blur-2xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
-                        <iframe class="relative z-10 w-full h-full transform scale-[1.05]" 
+                        <iframe class="relative z-10 w-full h-full" 
                                 src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
                                 frameborder="0" allow="autoplay; encrypted-media">
                         </iframe>
                     </div>`;
             } else {
                 clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
-                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-square' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-[3/4]' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
             }
 
             let tagsHTML = '';
@@ -546,6 +539,34 @@
                 </div>
             `;
         }
+
+        // 隨滾動連動的數字拉霸動畫
+        function updateScrollStats() {
+            const stats = document.querySelectorAll('.stat-num');
+            const windowHeight = window.innerHeight;
+
+            stats.forEach(stat => {
+                const rect = stat.getBoundingClientRect();
+                
+                // 若元素還在螢幕底端之下，直接顯示 0
+                if (rect.top > windowHeight) {
+                    stat.innerHTML = "0" + (stat.dataset.suffix || '');
+                    return;
+                }
+
+                // 元素進入螢幕後，根據滾動進度計算數值
+                let progress = (windowHeight - rect.top) / (windowHeight * 0.6); 
+                progress = Math.max(0, Math.min(1, progress));
+                
+                const endVal = parseInt(stat.dataset.val);
+                const currentVal = Math.floor(progress * endVal);
+                stat.innerHTML = currentVal + (stat.dataset.suffix || '');
+            });
+        }
+        
+        window.addEventListener('scroll', updateScrollStats);
+        window.addEventListener('resize', updateScrollStats);
+        setTimeout(updateScrollStats, 100);
 
         // 游標特效
         const cursor = document.getElementById('cursor');
