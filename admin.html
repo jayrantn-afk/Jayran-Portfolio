@@ -258,7 +258,7 @@
         let currentView = 'animation';
         let sortableInstance = null;
         let editingWorkId = null;
-        let isHeroBgCleared = false; // 紀錄是否清除了背景圖
+        let isHeroBgCleared = false; 
 
         // 圖片壓縮與 Base64 轉換核心
         async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
@@ -281,7 +281,6 @@
             });
         }
 
-        // 綁定上傳按鈕事件
         document.getElementById('set-hero-bg-input').addEventListener('change', async (e) => {
             const f = e.target.files[0];
             if(!f) return;
@@ -317,14 +316,12 @@
             hideLoader();
         });
 
-        // YouTube 工具函式
         function extractYouTubeId(url) {
             if (!url) return null;
             let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
             return match ? match[1] : null;
         }
 
-        // 表單與分類連動
         const catRadios = document.querySelectorAll('input[name="w-cat"]');
         catRadios.forEach(radio => {
             radio.addEventListener('change', () => {
@@ -357,7 +354,6 @@
             }, 500);
         });
 
-        // 登入機制
         window.onload = () => {
             const savedLogin = localStorage.getItem('jayran_admin_auth');
             if (savedLogin && (Date.now() - savedLogin < 12 * 60 * 60 * 1000)) {
@@ -379,7 +375,6 @@
         document.getElementById('login-pwd').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
         window.adminLogout = function () { localStorage.removeItem('jayran_admin_auth'); location.reload(); };
 
-        // 初始化
         async function initAdminData() {
             showLoader("連接資料庫中...");
             await fetchData();
@@ -427,7 +422,6 @@
             }
         }
 
-        // 儲存網站設定
         document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
             showLoader("儲存設定中...");
             const saveBtn = document.getElementById('btn-save-settings-db'); saveBtn.disabled = true;
@@ -448,14 +442,14 @@
                     document.getElementById('set-hero-bg-preview').classList.add('hidden');
                     document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
                 } else if (isHeroBgCleared) {
-                    data.heroBg = ""; // 明確清空
+                    data.heroBg = ""; 
                 } else {
                     const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
                     if (docSnap.exists() && docSnap.data().heroBg) data.heroBg = docSnap.data().heroBg;
                 }
 
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
-                isHeroBgCleared = false; // 重置狀態
+                isHeroBgCleared = false; 
                 alert("✅ 網站設定已更新！");
             } catch (error) { alert("⛔ 儲存失敗！"); } 
             finally { hideLoader(); saveBtn.disabled = false; }
@@ -473,13 +467,12 @@
             }
         };
 
-        // 打勾防呆機制 (最多 10 個)
         window.toggleFeatured = async function(id) {
             const work = allWorks.find(w => w.id === id);
             if(!work) return;
             if(!work.isFeatured) {
                 const featuredCount = allWorks.filter(w => w.isFeatured).length;
-                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！請先取消其他的。");
+                if(featuredCount >= 5) return alert("⚠️ 首頁精選最多只能設定 5 個！請先取消其他的。");
             }
             showLoader("更新狀態...");
             await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
@@ -580,7 +573,6 @@
             finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); renderList(); }
         });
 
-        // 編輯功能
         window.editWork = function(id) {
             const work = allWorks.find(w => w.id === id);
             if (!work) return;
@@ -645,7 +637,6 @@
             finally { hideLoader(); }
         };
 
-        // 發佈/修改 作品
         document.getElementById('btn-submit').addEventListener('click', async () => {
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
@@ -690,7 +681,7 @@
                     const catWorks = allWorks.filter(w => w.category === category);
                     const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
                     docData.order = maxOrder + 1;
-                    // 如果被設為精選，也給一個初始精選排序
+                    
                     if (docData.isFeatured) {
                         const featuredWorks = allWorks.filter(w => w.isFeatured);
                         docData.featuredOrder = featuredWorks.length > 0 ? Math.max(...featuredWorks.map(w => w.featuredOrder || 0)) + 1 : 0;
