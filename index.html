@@ -1,246 +1,293 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jayran Studio | 後台管理中心</title>
+    <title>JAYRAN STUDIO | 杰冉影像</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
     <style>
-        body { background-color: #f3f4f6; font-family: -apple-system, sans-serif; }
-        #login-overlay { position: fixed; inset: 0; background: #111827; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .sortable-ghost { opacity: 0.4; background-color: #e5e7eb; border: 2px dashed #3b82f6; }
-        .drag-handle { cursor: grab; }
-        .drag-handle:active { cursor: grabbing; }
+        :root { --bg-color: #050505; --text-main: #f5f5f5; --text-muted: #888888; }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        h1, h2, h3, .serif-tc { font-family: 'Playfair Display', 'Noto Serif TC', serif; }
+        
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .cat-animation { --cat-bg: #fef3c7; --cat-border: #f59e0b; --cat-text: #92400e; --cat-badge-bg: bg-amber-100; --cat-badge-text: text-amber-700; }
-        .cat-video { --cat-bg: #dbeafe; --cat-border: #3b82f6; --cat-text: #1e40af; --cat-badge-bg: bg-blue-100; --cat-badge-text: text-blue-700; }
-        .cat-graphic { --cat-bg: #f3e8ff; --cat-border: #a855f7; --cat-text: #6b21a8; --cat-badge-bg: bg-purple-100; --cat-badge-text: text-purple-700; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+
+        .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
+        #cursor-text { position: fixed; pointer-events: none; z-index: 100000; background: white; color: black; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; transform: translate(15px, 15px); transition: opacity 0.2s; white-space: nowrap; }
+
+        .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-up.in-view { opacity: 1; transform: translateY(0); }
+
+        .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
+        .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.8); }
+        .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1); }
+        .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; }
+        .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+
+        .filter-btn { position: relative; color: var(--text-muted); transition: color 0.3s ease; padding-bottom: 4px; }
+        .filter-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--text-main); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .filter-btn:hover, .filter-btn.active { color: var(--text-main); }
+        .filter-btn:hover::after, .filter-btn.active::after { width: 100%; }
+
+        .view-page { display: none; animation: fadeInPage 0.6s ease forwards; }
+        .view-page.active { display: block; }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scrollDown { 0% { transform: translateY(-100%); } 50% { transform: translateY(100%); } 100% { transform: translateY(100%); } }
+
+        .timeline-dot { position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #050505; }
     </style>
 </head>
-<body class="h-screen overflow-hidden text-gray-800">
+<body class="antialiased selection:bg-gray-700 selection:text-white">
 
-    <div id="login-overlay">
-        <div class="text-4xl font-black mb-8 tracking-widest text-white uppercase">Jayran Admin</div>
-        <input id="login-pwd" type="password" class="p-4 text-center text-black text-xl font-bold rounded-2xl w-80 mb-4 outline-none shadow-lg" placeholder="輸入後台密碼">
-        <div id="login-error" class="text-red-500 font-bold mb-4 hidden">密碼錯誤，請重新輸入</div>
-        <button id="btn-login" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-4 rounded-2xl font-bold text-xl shadow-lg transition cursor-pointer">登入管理中心</button>
+    <div class="custom-cursor hidden md:block" id="cursor"></div>
+    <div id="cursor-text" class="hidden opacity-0">點擊前往觀看</div>
+
+    <div id="global-loader" class="fixed inset-0 bg-[#050505] z-[100000] flex flex-col justify-center items-center transition-opacity duration-700">
+        <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran Studio</div>
     </div>
 
-    <div id="loader" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[9000] hidden flex-col justify-center items-center">
-        <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-        <div id="loader-text" class="text-lg font-bold text-gray-700 tracking-widest">資料處理中...</div>
-    </div>
+    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/90 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm">
+        <div class="cursor-pointer" onclick="switchPage('home')">
+            <img src="LOGO杰冉-09.png" alt="Jayran Studio" class="h-8 md:h-10 hover:opacity-80 transition" onerror="this.outerHTML='<span class=\'text-xl font-bold tracking-[0.2em] uppercase text-white\'>Jayran Studio</span>'">
+        </div>
+        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-bold text-gray-400">
+            <button onclick="switchPage('home')" class="hover:text-white transition-colors nav-link" data-target="home">首頁 Home</button>
+            <button onclick="switchPage('about')" class="hover:text-white transition-colors nav-link" data-target="about">關於我們 About</button>
+            <button onclick="switchPage('services')" class="hover:text-white transition-colors nav-link" data-target="services">服務項目 Services</button>
+            <button onclick="switchPage('work')" class="hover:text-white transition-colors nav-link" data-target="work">作品集 Works</button>
+            <button onclick="switchPage('contact')" class="hover:text-white transition-colors nav-link" data-target="contact">聯絡我們 Contact</button>
+        </div>
+    </nav>
 
-    <div class="flex h-full">
-        <aside class="w-96 bg-white shadow-2xl flex flex-col z-10">
-            <div class="p-6 bg-gray-900 text-white flex justify-between items-center">
-                <h1 class="text-xl font-black tracking-widest uppercase" id="panel-title">Admin Panel</h1>
-                <a href="index.html" target="_blank" class="text-gray-400 hover:text-white text-sm" title="預覽前台"><i class="fas fa-external-link-alt"></i></a>
+    <div id="page-home" class="view-page active">
+        <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
+            <div class="absolute inset-0 z-[-1]">
+                <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none parallax-bg">
+                    <source src="0_Sky_Contrast_1920x1080.mp4" type="video/mp4">
+                </video>
+                <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
             </div>
             
-            <div class="p-6 flex-1 overflow-y-auto">
-                <h2 class="text-lg font-bold border-b pb-2 mb-6 flex justify-between items-center">
-                    <span id="form-header">新增作品</span>
-                    <span id="edit-badge" class="hidden text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded animate-pulse">編輯模式</span>
-                </h2>
-                <div class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">作品標題 <span class="text-red-500">*</span></label>
-                        <input id="w-title" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg font-bold focus:border-blue-500 outline-none transition" placeholder="輸入標題...">
+            <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+                Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
+            </h1>
+            <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
+                杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
+            </p>
+        </header>
+
+        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
+                <div class="stat-box cursor-default group">
+                    <i class="fas fa-video text-4xl text-gray-600 mb-4 transition"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="100" data-suffix="+">0+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
+                </div>
+                <div class="stat-box cursor-default group">
+                    <i class="fas fa-eye text-4xl text-gray-600 mb-4 transition"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="2500" data-suffix="K+">0K+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
+                </div>
+                <div class="stat-box cursor-default group">
+                    <i class="fas fa-handshake text-4xl text-gray-600 mb-4 transition"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="5" data-suffix="+">0+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto overflow-hidden">
+            <div class="flex flex-col items-center mb-16 fade-up">
+                <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-4">Selected Works.</h2>
+                <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出</p>
+            </div>
+            
+            <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 w-full items-start"></div>
+            
+            <div class="text-center mt-16 fade-up">
+                <button onclick="switchPage('work')" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
+                    觀看所有作品 View More
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-about" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1000px] mx-auto min-h-screen">
+        <h2 class="text-4xl md:text-6xl serif-tc mb-16 text-center fade-up">About <br>Jayran Studio.</h2>
+        
+        <div class="mb-20 fade-up text-center max-w-3xl mx-auto space-y-6 text-gray-400 leading-relaxed tracking-wide">
+            <p>我們一直相信「尋找共識」，是邁向卓越的基礎。</p>
+            <p>杰冉影像是一間專注在「有效溝通」的內容公司，而溝通是雙向的，是互相說服的過程。希望每個與我們合作的夥伴，除了把心裡的事物傳遞出去外，也能收回寶貴的回饋，讓彼此變得更好，邁向卓越！</p>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-10 text-center uppercase tracking-widest border-b border-gray-800 pb-4 fade-up">大事記 Milestones</h3>
+        <div class="border-l border-gray-800 pl-8 relative space-y-16 ml-4 md:ml-12 fade-up">
+            <div class="relative">
+                <div class="timeline-dot"></div>
+                <h4 class="text-xl font-bold text-white mb-2">2025 年 10 月</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">杰冉影像工作室正式創立，開啟高質感影音製作的新篇章。</p>
+            </div>
+            <div class="relative">
+                <div class="timeline-dot"></div>
+                <h4 class="text-xl font-bold text-white mb-2">2026 年初</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">承接多項大型品牌專案，包含醫敏家、小花藥師等知名圖文與影音製作，累積觀看次數突破百萬。</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-services" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
+        <h2 class="text-4xl md:text-6xl serif-tc mb-16 text-center fade-up">Our <br>Services.</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center fade-up">
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-film text-5xl mb-6 text-blue-500"></i>
+                <h4 class="font-bold text-lg mb-3">影音製作</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">短影音剪輯、YT 長片剪輯、專業拍攝</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-pen-nib text-5xl mb-6 text-amber-500"></i>
+                <h4 class="font-bold text-lg mb-3">2D / MG 動畫</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">MG 動畫製作、IP 角色動態設計</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-bezier-curve text-5xl mb-6 text-purple-500"></i>
+                <h4 class="font-bold text-lg mb-3">視覺圖文設計</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">Banner 設計、Landing Page、EDM、廣告素材</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-bullhorn text-5xl mb-6 text-green-500"></i>
+                <h4 class="font-bold text-lg mb-3">影音腳本發想</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">品牌故事、廣告腳本企劃、短影音創意發想</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-work" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 fade-up">
+            <h2 class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">All <br>Works.</h2>
+            <div class="flex flex-col items-end gap-4">
+                <div class="flex gap-4 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light overflow-x-auto pb-2">
+                    <button class="filter-btn active whitespace-nowrap" onclick="filterWorks('animation')">Animation (動畫)</button>
+                    <button class="filter-btn whitespace-nowrap" onclick="filterWorks('video')">Video (影音)</button>
+                    <button class="filter-btn whitespace-nowrap" onclick="filterWorks('graphic')">Graphic (圖文)</button>
+                </div>
+                <div id="dynamic-tags" class="flex gap-2 flex-wrap justify-end mt-2"></div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 items-start" id="portfolio-grid-all"></div>
+        <div id="empty-state-all" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">此分類目前尚無作品。</div>
+    </div>
+
+    <div id="page-contact" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1200px] mx-auto min-h-screen">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-16 fade-up">
+            <div class="lg:col-span-2 space-y-8">
+                <h2 class="text-4xl md:text-5xl serif-tc mb-6">聯絡我們<br><span class="text-2xl text-gray-500 font-light mt-2 block">Contact Us.</span></h2>
+                <div class="space-y-8 text-sm text-gray-400 tracking-wider leading-relaxed">
+                    <p>
+                        <strong class="text-white block mb-1">工作室地址 Address</strong>
+                        台南市永康區復華三街56號2F
+                    </p>
+                    <p>
+                        <strong class="text-white block mb-1">聯絡信箱 Email</strong>
+                        <a id="dyn-contact-email-page" href="mailto:jayran.tn@gmail.com" class="hover:text-white transition">jayran.tn@gmail.com</a>
+                    </p>
+                    <p>
+                        <strong class="text-white block mb-1">營業時間 Hours</strong>
+                        9:30am - 18:30pm
+                    </p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <form id="contact-form" class="space-y-8 bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-gray-900 relative overflow-hidden shadow-2xl">
+                    <div id="form-success-msg" class="absolute inset-0 bg-[#0a0a0a] z-20 hidden flex-col items-center justify-center text-center px-8">
+                        <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                        <h3 class="text-2xl font-bold text-white mb-2">送出成功！</h3>
+                        <p class="text-gray-400 text-sm mb-8">我們已收到您的專案需求，將會盡快與您聯繫。</p>
+                        <button type="button" onclick="resetForm()" class="px-8 py-3 border border-gray-700 rounded-full hover:bg-white hover:text-black transition uppercase tracking-widest text-xs font-bold">再寫一封</button>
                     </div>
-                    <div class="flex gap-4">
-                        <div class="flex-1">
-                            <label class="block text-xs font-bold text-gray-500 mb-1">自訂分類標籤 (選填)</label>
-                            <select id="w-tags" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm font-bold focus:border-blue-500 outline-none transition">
-                                <option value="">無標籤 (請先至網站設定建立)</option>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">公司 / 品牌名稱</label>
+                            <input type="text" id="contact-name" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">姓名 / 聯絡人</label>
+                            <input type="text" id="contact-person" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">聯絡信箱 Email</label>
+                            <input type="email" id="contact-email-input" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">洽詢業務 Service</label>
+                            <select id="contact-service" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition appearance-none cursor-pointer relative z-10 pr-8">
+                                <option value="影片剪輯" class="bg-gray-900 text-white">影片剪輯</option>
+                                <option value="MG動畫製作" class="bg-gray-900 text-white">MG動畫製作</option>
+                                <option value="圖文製作" class="bg-gray-900 text-white">圖文製作</option>
                             </select>
-                        </div>
-                        <div class="flex items-center pt-5">
-                            <label class="flex items-center cursor-pointer group">
-                                <input type="checkbox" id="w-featured" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
-                                <span class="ml-2 text-sm font-bold text-gray-600 group-hover:text-blue-600 transition">首頁精選展出</span>
-                            </label>
+                            <i class="fas fa-chevron-down absolute right-2 bottom-3 text-gray-500 text-xs z-0 pointer-events-none"></i>
                         </div>
                     </div>
-
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">作品分類 <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="w-cat" value="animation" class="peer sr-only">
-                                <div class="text-center p-3 border rounded-lg font-bold text-sm peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 transition">✨ 動畫</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="w-cat" value="video" class="peer sr-only" checked>
-                                <div class="text-center p-3 border rounded-lg font-bold text-sm peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-600 transition">🎬 影音</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="w-cat" value="graphic" class="peer sr-only">
-                                <div class="text-center p-3 border rounded-lg font-bold text-sm peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-600 transition">🎨 圖文</div>
-                            </label>
-                        </div>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">專案描述 Message</label>
+                        <textarea id="contact-msg" rows="3" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition resize-none" required></textarea>
                     </div>
-
-                    <div id="fields-video-animation">
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-4">
-                            <p class="text-xs font-bold text-blue-600"><i class="fab fa-youtube mr-1"></i> 影片設定</p>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">YouTube 連結 <span class="text-red-500">*</span></label>
-                                <input id="w-youtube" type="text" class="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm focus:border-blue-500 outline-none transition" placeholder="貼上 YouTube 網址">
-                                <p class="text-[11px] text-gray-400 mt-1">前台會自動嵌入影片預覽，點擊跳轉觀看</p>
-                            </div>
-                            <div id="yt-preview" class="hidden">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">預覽</label>
-                                <div class="rounded-lg overflow-hidden bg-black aspect-video">
-                                    <iframe id="yt-preview-frame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="fields-graphic" class="hidden">
-                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-4">
-                            <p class="text-xs font-bold text-purple-600"><i class="fas fa-image mr-1"></i> 圖片設定</p>
-                            
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">上傳封面圖 (直接點擊上傳) <span class="text-red-500">*</span></label>
-                                <input type="file" id="w-img-input" accept="image/*" class="hidden">
-                                <div id="w-img-box" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('w-img-input').click()">
-                                    <img id="w-img-preview" class="hidden max-h-40 mx-auto rounded object-contain">
-                                    <div id="w-img-placeholder">
-                                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                        <div class="text-sm font-bold text-gray-500">點擊上傳圖片</div>
-                                        <div class="text-[10px] text-gray-400 mt-1">無檔案大小限制，系統會自動壓縮</div>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="w-img-base64">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">點擊開啟的外部連結 (選填)</label>
-                                <input id="w-img-link" type="text" class="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm focus:border-purple-500 outline-none transition" placeholder="例如 Behance / Dribbble 網址">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-2">
-                        <button id="btn-submit" class="flex-1 bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition transform mt-4">
-                            確認發佈
-                        </button>
-                        <button id="btn-cancel" onclick="cancelEdit()" class="hidden w-1/3 bg-red-100 text-red-600 font-bold py-4 rounded-xl shadow-lg hover:bg-red-200 hover:-translate-y-1 transition transform mt-4">
-                            取消編輯
+                    <div class="flex justify-end pt-4">
+                        <button type="button" id="btn-send" onclick="sendEmail()" class="group flex items-center gap-3 text-sm font-bold uppercase tracking-widest hover:text-gray-300 transition">
+                            <span>送出 Send</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
-        </aside>
+        </div>
+    </div>
 
-        <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col relative">
-            <div class="absolute bottom-4 right-4 text-[9px] text-gray-400 tracking-widest font-mono font-bold z-50">V 3.5.0 JAYRAN CORE</div>
-            <div class="flex gap-4 mb-6 border-b border-gray-200 pb-2 flex-wrap">
-                <button class="tab-btn font-bold text-amber-600 border-b-2 border-amber-500 px-3 pb-2 text-lg" onclick="switchView('animation', this)">動畫專案</button>
-                <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('video', this)">影音專案</button>
-                <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('graphic', this)">圖文專案</button>
-                <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('featured', this)"><i class="fas fa-star mr-1 text-green-500"></i>首頁精選排序</button>
-                <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('settings', this)"><i class="fas fa-cog mr-1"></i>網站前台設定</button>
-                <div class="flex-1"></div>
-                <button onclick="adminLogout()" class="text-gray-400 hover:text-red-500 font-bold text-sm px-3 pb-2"><i class="fas fa-sign-out-alt mr-1"></i>登出</button>
+    <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+            <h2 id="dyn-contact-text" class="text-2xl md:text-3xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
+            <div class="flex gap-4">
+                <a href="https://www.facebook.com/profile.php?id=61581644777570&locale=zh_TW" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.instagram.com/jayran.studio/" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://lin.ee/ski6rKN" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-line"></i>
+                </a>
             </div>
-
-            <div id="view-works" class="block">
-                <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <h2 class="text-2xl font-black mb-1">作品排序與預覽</h2>
-                        <p class="text-sm text-gray-500 font-bold">按住「≡」拖曳改變前台排版順序。越前面越大張。</p>
-                    </div>
-                    <button id="btn-save-order" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition hidden">
-                        <i class="fas fa-save mr-2"></i>儲存排序
-                    </button>
-                </div>
-                <div id="sortable-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"></div>
+        </div>
+        
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 tracking-widest uppercase border-t border-gray-900 pt-8">
+            <div class="mb-4 md:mb-0">&copy; 2026 JAYRAN STUDIO. All rights reserved. 
+                <a href="admin.html" class="ml-2 hover:text-white transition" title="進入管理中心"><i class="fas fa-lock"></i></a>
             </div>
-
-            <div id="view-settings" class="hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 max-w-3xl">
-                    <h2 class="text-2xl font-black mb-6 border-b pb-4">網站視覺與文字設定</h2>
-                    <div class="space-y-6">
-                        
-                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖 (若留空則播影片)</h3>
-                            <div>
-                                <input type="file" id="set-hero-bg-input" accept="image/*" class="hidden">
-                                <div id="set-hero-bg-box" class="border-2 border-dashed border-blue-300 bg-white rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50 transition" onclick="document.getElementById('set-hero-bg-input').click()">
-                                    <img id="set-hero-bg-preview" class="hidden max-h-40 mx-auto rounded object-contain">
-                                    <div id="set-hero-bg-placeholder">
-                                        <i class="fas fa-cloud-upload-alt text-3xl text-blue-400 mb-2"></i>
-                                        <div class="text-sm font-bold text-blue-600">點擊上傳圖片</div>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="set-hero-bg-base64">
-                                <button onclick="clearHeroBg()" class="mt-2 text-xs font-bold text-red-500 hover:text-red-700"><i class="fas fa-trash"></i> 移除背景圖片 (恢復播放影片)</button>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-gray-500"></i>首頁大標題</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第一行 (粗體)</label>
-                                    <input id="set-h1" class="w-full border p-3 rounded-lg font-bold" placeholder="Crafting Visual">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第二行 (斜體藝術字)</label>
-                                    <input id="set-h2" class="w-full border p-3 rounded-lg font-bold" placeholder="Masterpieces.">
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">下方中文副標題</label>
-                                <input id="set-sub" class="w-full border p-3 rounded-lg" placeholder="杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計">
-                            </div>
-                        </div>
-
-                        <div class="bg-purple-50 p-6 rounded-xl border border-purple-100">
-                            <h3 class="font-bold text-purple-800 mb-4"><i class="fas fa-tags mr-2 text-purple-500"></i>全站標籤庫設定</h3>
-                            <label class="block text-xs font-bold text-purple-600 mb-1">請輸入標籤名稱 (請用半形逗號 , 分隔)</label>
-                            <input id="set-global-tags" class="w-full bg-white border border-purple-200 p-3 rounded-lg text-sm font-bold outline-none focus:border-purple-500 transition" placeholder="例如: 小花藥師, 醫敏家, 品牌形象">
-                            <p class="text-xs text-purple-500 mt-2 font-bold">※ 設定後，新增作品時即可從下拉選單選擇。</p>
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-gray-500"></i>作品區標題</h3>
-                            <input id="set-sec-title" class="w-full border p-3 rounded-lg font-bold" placeholder="Selected<br>Works.">
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-gray-500"></i>頁尾聯絡資訊</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">聯絡標語</label>
-                                    <input id="set-contact-text" class="w-full border p-3 rounded-lg" placeholder="Ready to start your project?">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">聯絡信箱</label>
-                                    <input id="set-contact-email" class="w-full border p-3 rounded-lg font-bold" placeholder="hello@jayran.studio">
-                                </div>
-                            </div>
-                        </div>
-
-                        <button id="btn-save-settings-db" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1">
-                            <i class="fas fa-save mr-2"></i>儲存設定並同步至前台
-                        </button>
-                    </div>
-                </div>
+            <div>
+                Email: <a id="dyn-contact-email" href="mailto:jayran.tn@gmail.com" class="text-gray-400 hover:text-white transition">jayran.tn@gmail.com</a>
             </div>
-        </main>
+        </div>
+    </footer>
+
+    <div id="lightbox" class="fixed inset-0 z-[100000] bg-black/95 hidden flex-col justify-center items-center opacity-0 transition-opacity duration-300">
+        <button onclick="closeLightbox()" class="absolute top-8 right-8 text-white text-5xl hover:text-gray-400 cursor-pointer z-50">&times;</button>
+        <img id="lightbox-img" class="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-lg transform scale-95 transition-transform duration-300">
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
@@ -253,442 +300,316 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let targetEmail = "jayran.tn@gmail.com"; 
 
-        let allWorks = [];
-        let currentView = 'animation';
-        let sortableInstance = null;
-        let editingWorkId = null;
-        let isHeroBgCleared = false; 
-
-        // 圖片壓縮
-        async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        let w = img.width, h = img.height;
-                        if (w > h) { if (w > mw) { h *= mw / w; w = mw; } } 
-                        else { if (h > mh) { w *= mh / h; h = mh; } }
-                        const c = document.createElement('canvas');
-                        c.width = w; c.height = h;
-                        c.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(c.toDataURL('image/jpeg', q));
-                    };
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        document.getElementById('set-hero-bg-input').addEventListener('change', async (e) => {
-            const f = e.target.files[0];
-            if(!f) return;
-            showLoader("處理背景圖中...");
-            const base64 = await compressImage(f, 1600, 900, 0.7); 
-            document.getElementById('set-hero-bg-base64').value = base64;
-            document.getElementById('set-hero-bg-preview').src = base64;
-            document.getElementById('set-hero-bg-preview').classList.remove('hidden');
-            document.getElementById('set-hero-bg-placeholder').classList.add('hidden');
-            isHeroBgCleared = false;
-            hideLoader();
-        });
-
-        window.clearHeroBg = function() {
-            document.getElementById('set-hero-bg-base64').value = '';
-            document.getElementById('set-hero-bg-preview').src = '';
-            document.getElementById('set-hero-bg-preview').classList.add('hidden');
-            document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
-            document.getElementById('set-hero-bg-input').value = '';
-            isHeroBgCleared = true;
-            alert("已預計移除背景圖片。點擊「儲存設定」生效。");
-        };
-
-        document.getElementById('w-img-input').addEventListener('change', async (e) => {
-            const f = e.target.files[0];
-            if(!f) return;
-            showLoader("處理圖片中...");
-            const base64 = await compressImage(f, 800, 800, 0.65);
-            document.getElementById('w-img-base64').value = base64;
-            document.getElementById('w-img-preview').src = base64;
-            document.getElementById('w-img-preview').classList.remove('hidden');
-            document.getElementById('w-img-placeholder').classList.add('hidden');
-            hideLoader();
-        });
-
-        function extractYouTubeId(url) {
-            if (!url) return null;
-            let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
-            return match ? match[1] : null;
-        }
-
-        const catRadios = document.querySelectorAll('input[name="w-cat"]');
-        catRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                const val = radio.value;
-                if (val === 'graphic') {
-                    document.getElementById('fields-video-animation').classList.add('hidden');
-                    document.getElementById('fields-graphic').classList.remove('hidden');
-                } else {
-                    document.getElementById('fields-video-animation').classList.remove('hidden');
-                    document.getElementById('fields-graphic').classList.add('hidden');
-                }
-            });
-        });
-
-        const ytInput = document.getElementById('w-youtube');
-        let ytDebounce = null;
-        ytInput.addEventListener('input', () => {
-            clearTimeout(ytDebounce);
-            ytDebounce = setTimeout(() => {
-                const vid = extractYouTubeId(ytInput.value);
-                const preview = document.getElementById('yt-preview');
-                const frame = document.getElementById('yt-preview-frame');
-                if (vid) {
-                    frame.src = `https://www.youtube.com/embed/${vid}?autoplay=0`;
-                    preview.classList.remove('hidden');
-                } else {
-                    preview.classList.add('hidden');
-                    frame.src = '';
-                }
-            }, 500);
-        });
-
-        window.onload = () => {
-            const savedLogin = localStorage.getItem('jayran_admin_auth');
-            if (savedLogin && (Date.now() - savedLogin < 12 * 60 * 60 * 1000)) {
-                document.getElementById('login-overlay').style.display = 'none';
-                initAdminData();
+        // 秒開網頁載入邏輯
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('global-loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 400);
             }
-        };
+        });
 
-        const doLogin = async () => {
-            const pwd = document.getElementById('login-pwd').value;
-            if (pwd === '00430552') {
-                document.getElementById('login-error').classList.add('hidden');
-                localStorage.setItem('jayran_admin_auth', Date.now());
-                document.getElementById('login-overlay').style.display = 'none';
-                initAdminData();
-            } else { document.getElementById('login-error').classList.remove('hidden'); }
-        };
-        document.getElementById('btn-login').addEventListener('click', doLogin);
-        document.getElementById('login-pwd').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
-        window.adminLogout = function () { localStorage.removeItem('jayran_admin_auth'); location.reload(); };
-
-        async function initAdminData() {
-            showLoader("連接資料庫中...");
-            await fetchData();
-            await fetchSettings();
-            hideLoader();
-        }
-
-        async function fetchData() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "jayran_works"));
-                allWorks = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // 核心修復：正確處理 0 排序
-                allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
-                renderList();
-            } catch (error) {
-                alert("⛔ 讀取作品失敗！");
-            }
-        }
-
-        function updateTagSelect(tagsString) {
-            const select = document.getElementById('w-tags');
-            if(!select) return;
-            select.innerHTML = '<option value="">無標籤</option>';
-            if(tagsString) {
-                tagsString.split(',').forEach(t => {
-                    const tag = t.trim();
-                    if(tag) select.innerHTML += `<option value="${tag}">${tag}</option>`;
-                });
-            }
-        }
-
-        async function fetchSettings() {
-            const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
+        // 1. 抓取動態文字與背景
+        onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if(data.h1) document.getElementById('set-h1').value = data.h1;
-                if(data.h2) document.getElementById('set-h2').value = data.h2;
-                if(data.sub) document.getElementById('set-sub').value = data.sub;
-                if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
-                if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
-                if(data.email) document.getElementById('set-contact-email').value = data.email;
-                if(data.globalTags) {
-                    document.getElementById('set-global-tags').value = data.globalTags;
-                    updateTagSelect(data.globalTags);
-                }
-            }
-        }
-
-        document.getElementById('btn-save-settings-db').addEventListener('click', async () => {
-            showLoader("儲存設定中...");
-            const saveBtn = document.getElementById('btn-save-settings-db'); saveBtn.disabled = true;
-            
-            const data = {
-                h1: document.getElementById('set-h1').value, h2: document.getElementById('set-h2').value,
-                sub: document.getElementById('set-sub').value, secTitle: document.getElementById('set-sec-title').value,
-                contactText: document.getElementById('set-contact-text').value, email: document.getElementById('set-contact-email').value,
-                globalTags: document.getElementById('set-global-tags').value
-            };
-            updateTagSelect(data.globalTags);
-
-            try {
-                const bgBase64 = document.getElementById('set-hero-bg-base64').value;
-                if (bgBase64) { 
-                    data.heroBg = bgBase64; 
-                    document.getElementById('set-hero-bg-base64').value = '';
-                    document.getElementById('set-hero-bg-preview').classList.add('hidden');
-                    document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
-                } else if (isHeroBgCleared) {
-                    data.heroBg = ""; 
+                
+                const videoEl = document.getElementById('hero-bg-video');
+                const imgEl = document.getElementById('hero-bg-img');
+                if(data.heroBg) {
+                    if(videoEl) { videoEl.classList.add('hidden'); videoEl.pause(); }
+                    if(imgEl) { imgEl.src = data.heroBg; imgEl.classList.remove('hidden'); }
                 } else {
-                    const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
-                    if (docSnap.exists() && docSnap.data().heroBg) data.heroBg = docSnap.data().heroBg;
+                    if(videoEl) { 
+                        videoEl.classList.remove('hidden'); 
+                        videoEl.play().catch(e => console.log("影片播放待命")); 
+                    }
+                    if(imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
                 }
-                await setDoc(doc(db, "jayran_settings", "frontend"), data);
-                isHeroBgCleared = false; 
-                alert("✅ 網站設定已更新！");
-            } catch (error) { alert("⛔ 儲存失敗！"); } 
-            finally { hideLoader(); saveBtn.disabled = false; }
-        });
 
-        window.switchView = function (type, btnEl) {
-            currentView = type;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800");
-            const colorMap = { animation: 'text-amber-600 border-amber-500', video: 'text-blue-600 border-blue-500', graphic: 'text-purple-600 border-purple-500', featured: 'text-green-600 border-green-500', settings: 'text-gray-800 border-gray-800' };
-            btnEl.className = `tab-btn font-bold ${colorMap[type] || 'text-blue-600 border-blue-500'} border-b-2 px-3 pb-2 text-lg`;
-            if (type === 'settings') {
-                document.getElementById('view-works').classList.add('hidden'); document.getElementById('view-settings').classList.remove('hidden');
-            } else {
-                document.getElementById('view-settings').classList.add('hidden'); document.getElementById('view-works').classList.remove('hidden'); renderList();
-            }
-        };
-
-        window.toggleFeatured = async function(id) {
-            const work = allWorks.find(w => w.id === id);
-            if(!work) return;
-            if(!work.isFeatured) {
-                const featuredCount = allWorks.filter(w => w.isFeatured).length;
-                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！");
-            }
-            showLoader("更新狀態...");
-            await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
-            work.isFeatured = !work.isFeatured;
-            renderList();
-            hideLoader();
-        };
-
-        function renderList() {
-            const container = document.getElementById('sortable-list'); container.innerHTML = '';
-            
-            let filtered;
-            if (currentView === 'featured') {
-                filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999));
-            } else {
-                filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
-            }
-
-            if (filtered.length === 0) { 
-                container.innerHTML = `<div class="col-span-full py-10 text-center text-gray-400 font-bold">${currentView === 'featured' ? '請先到各分類勾選首頁精選' : '目前無作品。'}</div>`; 
-                return; 
-            }
-
-            const badgeMap = { animation: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'ANIMATION' }, video: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'VIDEO' }, graphic: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'GRAPHIC' }};
-
-            filtered.forEach((work, index) => {
-                const badge = badgeMap[work.category] || badgeMap.video;
-                const isVideo = work.category === 'animation' || work.category === 'video';
-                const ytId = isVideo ? extractYouTubeId(work.youtubeUrl || work.link) : null;
-                
-                let finalImgUrl = work.imageUrl;
-                if (finalImgUrl && finalImgUrl.includes('hqdefault.jpg')) { finalImgUrl = finalImgUrl.replace('hqdefault.jpg', 'maxresdefault.jpg'); }
-
-                let thumbHTML = '';
-                if (isVideo && ytId) thumbHTML = `<img src="${finalImgUrl}" class="w-full h-full object-cover"><div class="absolute inset-0 flex items-center justify-center"><i class="fas fa-play-circle text-white text-3xl opacity-70"></i></div>`;
-                else if (finalImgUrl) thumbHTML = `<img src="${finalImgUrl}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">`;
-                else thumbHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400"><i class="fas fa-image text-2xl"></i></div>`;
-
-                const featuredBtnClass = work.isFeatured ? 'bg-green-500 text-white shadow-lg' : 'bg-white text-gray-300 hover:text-green-500';
-                const tagBadge = work.tags ? `<span class="absolute top-2 right-2 bg-white text-gray-800 text-[9px] font-black px-2 py-1 rounded-full shadow-sm z-10">${work.tags}</span>` : '';
-
-                const el = document.createElement('div');
-                el.className = "bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group relative";
-                el.setAttribute('data-id', work.id);
-                
-                el.innerHTML = `
-                    <div class="h-28 relative">
-                        ${thumbHTML}
-                        ${tagBadge}
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 z-20">
-                            <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-blue-600 transition z-50" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-red-600 transition z-50" title="刪除"><i class="fas fa-trash text-sm"></i></div>
-                        </div>
-                        <button onclick="event.stopPropagation(); toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}">
-                            <i class="fas fa-check text-xs"></i>
-                        </button>
-                    </div>
-                    <div class="p-2">
-                        <div class="flex items-center gap-1 mb-1">
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${badge.bg} ${badge.text}">${badge.label}</span>
-                            <span class="text-[10px] text-gray-400">#${index + 1}</span>
-                        </div>
-                        <h3 class="font-bold text-gray-800 text-xs truncate">${work.title}</h3>
-                    </div>
-                `;
-                container.appendChild(el);
-            });
-            if (sortableInstance) sortableInstance.destroy();
-            sortableInstance = new Sortable(container, { handle: '.drag-handle', animation: 200, onEnd: function () { document.getElementById('btn-save-order').classList.remove('hidden'); } });
-        }
-
-        document.getElementById('btn-save-order').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-save-order'); btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>儲存中...'; btn.disabled = true;
-            const batch = writeBatch(db);
-            document.querySelectorAll('#sortable-list > div').forEach((item, index) => {
-                const id = item.getAttribute('data-id');
-                if (id) { 
-                    if (currentView === 'featured') {
-                        batch.update(doc(db, "jayran_works", id), { featuredOrder: index }); 
-                        const work = allWorks.find(w => w.id === id); if (work) work.featuredOrder = index;
+                if(data.h1 || data.h2) document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
+                if(data.sub) document.getElementById('dyn-sub').innerText = data.sub;
+                if(data.secTitle) document.getElementById('dyn-sec-title').innerHTML = data.secTitle;
+                if(data.contactText) {
+                    const words = data.contactText.split(' ');
+                    if(words.length > 2) {
+                        const lastTwo = words.splice(-2).join(' ');
+                        document.getElementById('dyn-contact-text').innerHTML = `${words.join(' ')} <span class="text-white">${lastTwo}</span>`;
                     } else {
-                        batch.update(doc(db, "jayran_works", id), { order: index }); 
-                        const work = allWorks.find(w => w.id === id); if (work) work.order = index;
+                        document.getElementById('dyn-contact-text').innerHTML = data.contactText;
                     }
                 }
+                if(data.email) {
+                    targetEmail = data.email;
+                    document.getElementById('dyn-contact-email').innerText = data.email;
+                    document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
+                    const pageEmail = document.getElementById('dyn-contact-email-page');
+                    if(pageEmail) { pageEmail.innerText = data.email; pageEmail.href = "mailto:" + data.email; }
+                }
+            }
+        }, (error) => console.error(error));
+
+        // 透過 Formsubmit API 背景發信
+        window.sendEmail = function() {
+            const name = document.getElementById('contact-name').value;
+            const person = document.getElementById('contact-person').value;
+            const email = document.getElementById('contact-email-input').value;
+            const service = document.getElementById('contact-service').value;
+            const msg = document.getElementById('contact-msg').value;
+            const btn = document.getElementById('btn-send');
+            
+            if(!name || !person || !email || !msg) return alert("請完整填寫必填欄位！");
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="ml-2">傳送中...</span>';
+            btn.disabled = true;
+
+            fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    "公司品牌名稱": name,
+                    "姓名聯絡人": person,
+                    "聯絡信箱": email,
+                    "洽詢業務": service,
+                    "專案需求": msg,
+                    "_subject": `[官網諮詢] 來自 ${name} 的專案需求`
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('form-success-msg').style.display = 'flex';
+                btn.innerHTML = '<span>送出 Send</span><i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>';
+                btn.disabled = false;
+            })
+            .catch(error => {
+                alert("目前無法傳送，請稍後再試或直接來信。");
+                btn.innerHTML = '<span>送出 Send</span><i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>';
+                btn.disabled = false;
             });
-            try { 
-                await batch.commit(); 
-                // 核心修復：儲存後的再次排序，必須檢查 undefined
-                if (currentView === 'featured') {
-                    allWorks.sort((a, b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)); 
-                } else {
-                    allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999)); 
+        };
+
+        window.resetForm = function() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('form-success-msg').style.display = 'none';
+        };
+
+        // 2. 抓取作品集資料
+        let allWorks = [];
+        let currentFilter = 'animation';
+        let currentTag = ''; 
+
+        onSnapshot(collection(db, "jayran_works"), (snapshot) => {
+            allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // 修復排序 Bug
+            allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
+            renderPortfolioHome();
+            renderPortfolioAll();
+        }, (error) => console.error(error));
+
+        // SPA 頁面切換
+        window.switchPage = function(pageId) {
+            document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
+            const targetPage = document.getElementById('page-' + pageId);
+            if(targetPage) targetPage.classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('text-white'));
+            const activeNav = document.querySelector(`.nav-link[data-target="${pageId}"]`);
+            if(activeNav) activeNav.classList.add('text-white');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (pageId === 'work') renderPortfolioAll();
+        };
+
+        window.openLightbox = function(url) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            img.src = url;
+            lb.classList.remove('hidden');
+            lb.style.display = 'flex';
+            setTimeout(() => { lb.classList.remove('opacity-0'); img.classList.replace('scale-95', 'scale-100'); }, 10);
+        };
+        
+        window.closeLightbox = function() {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            lb.classList.add('opacity-0');
+            img.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { lb.classList.add('hidden'); lb.style.display = 'none'; }, 300);
+        };
+
+        window.filterWorks = function(type) {
+            currentFilter = type;
+            currentTag = ''; 
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderPortfolioAll();
+        };
+
+        window.filterByTag = function(tag, btnEl) {
+            currentTag = tag;
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.replace('bg-white', 'bg-gray-800'));
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.replace('text-black', 'text-gray-400'));
+            btnEl.classList.replace('bg-gray-800', 'bg-white');
+            btnEl.classList.replace('text-gray-400', 'text-black');
+            renderPortfolioAll();
+        }
+
+        function renderPortfolioHome() {
+            const grid = document.getElementById('portfolio-grid-home');
+            grid.innerHTML = '';
+            const featuredWorks = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)).slice(0, 5);
+
+            featuredWorks.forEach((work) => {
+                const itemHTML = buildWorkCard(work, true);
+                grid.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        function renderPortfolioAll() {
+            const grid = document.getElementById('portfolio-grid-all');
+            const emptyState = document.getElementById('empty-state-all');
+            const tagsContainer = document.getElementById('dynamic-tags');
+            grid.innerHTML = '';
+
+            let filteredWorks = allWorks.filter(w => w.category === currentFilter);
+
+            const uniqueTags = [...new Set(allWorks.filter(w => w.category === currentFilter && w.tags).map(w => w.tags.split(',')).flat().map(t => t.trim()))];
+            if (uniqueTags.length > 0) {
+                tagsContainer.innerHTML = `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === '' ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('', this)">全部</button>` + 
+                    uniqueTags.map(t => `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === t ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('${t}', this)">#${t}</button>`).join('');
+            } else {
+                tagsContainer.innerHTML = '';
+            }
+
+            if (currentTag) {
+                filteredWorks = filteredWorks.filter(w => w.tags && w.tags.includes(currentTag));
+            }
+
+            if (filteredWorks.length === 0) { emptyState.classList.remove('hidden'); } else { emptyState.classList.add('hidden'); }
+
+            filteredWorks.forEach((work) => {
+                const itemHTML = buildWorkCard(work, false);
+                grid.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        function buildWorkCard(work, isHome) {
+            let categoryLabel = 'Graphic Design';
+            if(work.category === 'video') categoryLabel = 'Video Production';
+            if(work.category === 'animation') categoryLabel = 'Animation';
+
+            const isVideo = work.category === 'video' || work.category === 'animation';
+            let mediaHTML = '';
+            let clickAction = '';
+            let videoClass = isVideo ? 'is-video' : ''; 
+            
+            if (isVideo && work.youtubeId) {
+                const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
+                const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
+                clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
+                
+                const blurBgUrl = `https://img.youtube.com/vi/${work.youtubeId}/hqdefault.jpg`;
+                
+                mediaHTML = `
+                    <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center shadow-inner">
+                        <div class="absolute inset-0 bg-cover bg-center opacity-50 blur-2xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
+                        <iframe class="relative z-10 w-full h-full transform scale-[1.05]" 
+                                src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
+                                frameborder="0" allow="autoplay; encrypted-media">
+                        </iframe>
+                        <div class="absolute inset-0 flex items-center justify-center z-20">
+                            <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500">
+                                <i class="fas fa-play text-white text-xs ml-1"></i>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
+                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+            }
+
+            let tagsHTML = '';
+            if(work.tags) {
+                tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-white/20 text-white px-2 py-0.5 rounded text-[8px] mr-1 mt-2">#${t.trim()}</span>`).join('');
+            }
+
+            return `
+                <div class="portfolio-item rounded-xl w-full break-inside-avoid ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                    ${mediaHTML}
+                    <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
+                        <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
+                        <h3 class="text-base md:text-xl serif-tc text-white font-bold leading-tight drop-shadow-md">${work.title}</h3>
+                        <div>${tagsHTML}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateScrollStats() {
+            const stats = document.querySelectorAll('.stat-num');
+            const windowHeight = window.innerHeight;
+
+            stats.forEach(stat => {
+                const rect = stat.getBoundingClientRect();
+                
+                if (rect.top > windowHeight) {
+                    stat.innerHTML = "0" + (stat.dataset.suffix || '');
+                    return;
                 }
-                btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; 
-                renderList();
-            } catch (error) { alert("排序儲存失敗！"); } 
-            finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); }
+
+                let progress = (windowHeight - rect.top) / (windowHeight * 0.7); 
+                progress = Math.max(0, Math.min(1, progress));
+                
+                const endVal = parseInt(stat.dataset.val);
+                const currentVal = Math.floor(progress * endVal);
+                stat.innerHTML = currentVal + (stat.dataset.suffix || '');
+            });
+        }
+        
+        window.addEventListener('scroll', updateScrollStats);
+        window.addEventListener('resize', updateScrollStats);
+        setTimeout(updateScrollStats, 100);
+
+        const cursor = document.getElementById('cursor');
+        const cursorText = document.getElementById('cursor-text');
+        
+        document.addEventListener('mousemove', (e) => { 
+            if(cursor) { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; }
+            
+            const watchTarget = e.target.closest('.is-video') || e.target.closest('.portfolio-item');
+            if (watchTarget && cursorText) {
+                cursorText.style.left = (e.clientX + 15) + 'px';
+                cursorText.style.top = (e.clientY + 15) + 'px';
+                cursorText.classList.remove('hidden', 'opacity-0');
+            } else if (cursorText) {
+                cursorText.classList.add('opacity-0');
+                setTimeout(() => cursorText.classList.add('hidden'), 200);
+            }
         });
 
-        window.editWork = function(id) {
-            const work = allWorks.find(w => w.id === id);
-            if (!work) return;
-            editingWorkId = id;
-            document.getElementById('form-header').innerText = "編輯作品";
-            document.getElementById('edit-badge').classList.remove('hidden');
-            document.getElementById('btn-submit').innerText = "儲存修改";
-            document.getElementById('btn-submit').classList.replace('bg-gray-900', 'bg-blue-600');
-            document.getElementById('btn-cancel').classList.remove('hidden');
-            document.getElementById('w-title').value = work.title;
-            document.getElementById('w-tags').value = work.tags || '';
-            document.getElementById('w-featured').checked = !!work.isFeatured;
-            document.querySelector(`input[name="w-cat"][value="${work.category}"]`).checked = true;
-            document.querySelector(`input[name="w-cat"][value="${work.category}"]`).dispatchEvent(new Event('change'));
-            if (work.category === 'video' || work.category === 'animation') {
-                document.getElementById('w-youtube').value = work.youtubeUrl || work.link || '';
-                document.getElementById('w-youtube').dispatchEvent(new Event('input'));
-            } else {
-                if(work.imageUrl) {
-                    document.getElementById('w-img-base64').value = work.imageUrl;
-                    document.getElementById('w-img-preview').src = work.imageUrl;
-                    document.getElementById('w-img-preview').classList.remove('hidden');
-                    document.getElementById('w-img-placeholder').classList.add('hidden');
-                }
-                document.getElementById('w-img-link').value = work.link || '';
+        document.addEventListener('mouseover', (e) => {
+            if(!cursor) return;
+            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item')) { 
+                cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; 
+                cursor.style.backgroundColor = 'rgba(255,255,255,0.1)'; 
+            } else { 
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)'; 
+                cursor.style.backgroundColor = 'transparent'; 
             }
-        };
-
-        window.cancelEdit = function() {
-            editingWorkId = null;
-            document.getElementById('form-header').innerText = "新增作品";
-            document.getElementById('edit-badge').classList.add('hidden');
-            document.getElementById('btn-submit').innerText = "確認發佈";
-            document.getElementById('btn-submit').classList.replace('bg-blue-600', 'bg-gray-900');
-            document.getElementById('btn-cancel').classList.add('hidden');
-            document.getElementById('w-title').value = '';
-            document.getElementById('w-tags').value = '';
-            document.getElementById('w-featured').checked = false;
-            document.getElementById('w-youtube').value = '';
-            document.getElementById('w-img-base64').value = '';
-            document.getElementById('w-img-preview').src = '';
-            document.getElementById('w-img-preview').classList.add('hidden');
-            document.getElementById('w-img-placeholder').classList.remove('hidden');
-            document.getElementById('w-img-link').value = '';
-            document.getElementById('yt-preview').classList.add('hidden');
-            document.getElementById('yt-preview-frame').src = '';
-        };
-
-        window.deleteWork = async function (id) {
-            if (!confirm('確定要刪除這份作品嗎？')) return;
-            showLoader("刪除中...");
-            try {
-                if(editingWorkId === id) cancelEdit();
-                await deleteDoc(doc(db, "jayran_works", id));
-                allWorks = allWorks.filter(w => w.id !== id);
-                renderList();
-            } catch (error) { alert("刪除失敗！"); }
-            finally { hideLoader(); }
-        };
-
-        document.getElementById('btn-submit').addEventListener('click', async () => {
-            const title = document.getElementById('w-title').value.trim();
-            const category = document.querySelector('input[name="w-cat"]:checked').value;
-            const isVideo = category === 'animation' || category === 'video';
-            if (!title) return alert("請輸入標題");
-            let docData = { 
-                title: title, 
-                category: category,
-                tags: document.getElementById('w-tags').value.trim(),
-                isFeatured: document.getElementById('w-featured').checked
-            };
-            if (isVideo) {
-                const ytUrl = document.getElementById('w-youtube').value.trim();
-                const ytId = extractYouTubeId(ytUrl);
-                if (!ytUrl || !ytId) return alert("請貼上 YouTube 連結");
-                docData.youtubeUrl = ytUrl;
-                docData.youtubeId = ytId;
-                docData.imageUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
-                docData.link = ytUrl;
-            } else {
-                const b64 = document.getElementById('w-img-base64').value;
-                if (!b64 && !editingWorkId) return alert("請點擊上傳圖片！");
-                if (b64) docData.imageUrl = b64;
-                docData.link = document.getElementById('w-img-link').value.trim();
-            }
-            showLoader("寫入資料中...");
-            const submitBtn = document.getElementById('btn-submit');
-            submitBtn.disabled = true;
-            try {
-                if (editingWorkId) {
-                    await updateDoc(doc(db, "jayran_works", editingWorkId), docData);
-                    const index = allWorks.findIndex(w => w.id === editingWorkId);
-                    if (index !== -1) allWorks[index] = { ...allWorks[index], ...docData };
-                    alert("✅ 修改成功！");
-                } else {
-                    docData.createdAt = Date.now();
-                    const catWorks = allWorks.filter(w => w.category === category);
-                    const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
-                    docData.order = maxOrder + 1;
-                    if (docData.isFeatured) {
-                        const featuredWorks = allWorks.filter(w => w.isFeatured);
-                        docData.featuredOrder = featuredWorks.length > 0 ? Math.max(...featuredWorks.map(w => w.featuredOrder || 0)) + 1 : 0;
-                    }
-                    const docRef = await addDoc(collection(db, "jayran_works"), docData);
-                    allWorks.push({ id: docRef.id, ...docData });
-                }
-                cancelEdit(); 
-                if (currentView === 'featured') switchView('featured', document.querySelector('[onclick*="featured"]'));
-                else switchView(category, document.querySelector(`[onclick*="'${category}'"]`));
-            } catch (error) { alert("⛔ 發佈失敗！圖片過大。"); } 
-            finally { hideLoader(); submitBtn.disabled = false; }
+        });
+        
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxBg = document.querySelectorAll('.parallax-bg');
+            parallaxBg.forEach(bg => { if(bg) bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`; });
         });
 
-        function showLoader(text) { document.getElementById('loader-text').innerText = text; document.getElementById('loader').style.display = 'flex'; }
-        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+        const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
+        const observeElements = () => { document.querySelectorAll('.fade-up:not(.in-view)').forEach(el => observer.observe(el)); };
+        new MutationObserver(observeElements).observe(document.body, { childList: true, subtree: true });
+        setTimeout(observeElements, 500);
     </script>
 </body>
 </html>
