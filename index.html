@@ -76,7 +76,7 @@
         <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
             <div class="absolute inset-0 z-[-1]">
                 <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none parallax-bg">
-                    <source src="https://cdn.coverr.co/videos/coverr-a-person-typing-on-a-laptop-5183/1080p.mp4" type="video/mp4">
+                    <source src="0_Sky_Contrast_1920x1080.mp4" type="video/mp4">
                 </video>
                 <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
@@ -101,31 +101,32 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
                 <div class="stat-box cursor-pointer group">
                     <i class="fas fa-video text-4xl text-gray-800 group-hover:text-blue-500 transition mb-4"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="600" data-suffix="+">0+</h3>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="100" data-suffix="+">0+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
                 </div>
                 <div class="stat-box cursor-pointer group">
                     <i class="fas fa-eye text-4xl text-gray-800 group-hover:text-purple-500 transition mb-4"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="2" data-suffix="M+">0M+</h3>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="5" data-suffix="M+">0M+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
                 </div>
                 <div class="stat-box cursor-pointer group">
                     <i class="fas fa-handshake text-4xl text-gray-800 group-hover:text-amber-500 transition mb-4"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="150" data-suffix="+">0+</h3>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="5" data-suffix="+">0+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
                 </div>
             </div>
         </section>
 
-        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto">
+        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto overflow-hidden">
             <div class="flex flex-col items-center mb-16 fade-up">
                 <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-4">Selected Works.</h2>
-                <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出</p>
+                <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出 (支援滑鼠拖曳與滾動)</p>
             </div>
             
-            <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5"></div>
+            <div id="portfolio-grid-home" class="flex gap-4 md:gap-5 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 cursor-grab active:cursor-grabbing w-full" style="-ms-overflow-style: none; scrollbar-width: none;"></div>
+            <style>#portfolio-grid-home::-webkit-scrollbar { display: none; }</style>
             
-            <div class="text-center mt-16 fade-up">
+            <div class="text-center mt-12 fade-up">
                 <button onclick="switchPage('work')" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
                     觀看所有作品 View More
                 </button>
@@ -153,7 +154,7 @@
                 <h4 class="text-xl font-bold text-white mb-2">2026 年初</h4>
                 <p class="text-sm text-gray-400 leading-relaxed">承接多項大型品牌專案，包含醫敏家、小花藥師等知名圖文與影音製作，累積觀看次數突破百萬。</p>
             </div>
-            </div>
+        </div>
     </div>
 
     <div id="page-services" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
@@ -277,11 +278,16 @@
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                
+                // 動態判斷背景是影片還是圖片
                 const videoEl = document.getElementById('hero-bg-video');
                 const imgEl = document.getElementById('hero-bg-img');
                 if(data.heroBg) {
                     if(videoEl) videoEl.classList.add('hidden');
                     if(imgEl) { imgEl.src = data.heroBg; imgEl.classList.remove('hidden'); }
+                } else {
+                    if(videoEl) videoEl.classList.remove('hidden');
+                    if(imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
                 }
 
                 if(data.h1 || data.h2) document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
@@ -335,7 +341,6 @@
             document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
             
-            // 處理導航列亮起狀態
             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('text-white'));
             const activeNav = document.querySelector(`.nav-link[data-target="${pageId}"]`);
             if(activeNav) activeNav.classList.add('text-white');
@@ -382,11 +387,11 @@
             renderPortfolioAll();
         }
 
-        // 生成首頁精選 (最多 5 個)
+        // 生成首頁精選
         function renderPortfolioHome() {
             const grid = document.getElementById('portfolio-grid-home');
             grid.innerHTML = '';
-            const featuredWorks = allWorks.filter(w => w.isFeatured).slice(0, 5);
+            const featuredWorks = allWorks.filter(w => w.isFeatured);
 
             featuredWorks.forEach((work) => {
                 const itemHTML = buildWorkCard(work, true);
@@ -433,7 +438,7 @@
             const isVideo = work.category === 'video' || work.category === 'animation';
             let mediaHTML = '';
             let clickAction = '';
-            let videoClass = isVideo ? 'is-video' : ''; // 供游標追蹤辨識
+            let videoClass = isVideo ? 'is-video' : ''; 
             
             if (isVideo && work.youtubeId) {
                 const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
@@ -458,7 +463,7 @@
             }
 
             return `
-                <div class="portfolio-item break-inside-avoid rounded-xl ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                <div class="portfolio-item rounded-xl ${isHome ? 'min-w-[280px] md:min-w-[340px] shrink-0 snap-center mb-0' : 'break-inside-avoid mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
                     ${mediaHTML}
                     <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
                         <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
@@ -469,14 +474,15 @@
             `;
         }
 
-        // Odometer 數字拉霸動畫
-        function animateValue(obj, start, end, duration) {
+        // Odometer 數字拉霸動畫 (不從0開始)
+        function animateValue(obj, finalEnd, duration) {
             let startTimestamp = null;
             const suffix = obj.dataset.suffix || '';
+            const start = Math.floor(finalEnd * 0.7); // 從目標的 70% 開始跑
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start) + suffix;
+                obj.innerHTML = Math.floor(progress * (finalEnd - start) + start) + suffix;
                 if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
@@ -486,23 +492,29 @@
             box.addEventListener('mouseenter', function() {
                 const target = this.querySelector('.stat-num');
                 const endVal = parseInt(target.dataset.val);
-                animateValue(target, 0, endVal, 1000);
+                animateValue(target, endVal, 1500);
             });
         });
 
-        // 游標特效 (遇到影片顯示 "點擊前往 YouTube")
+        // 橫向拖曳滑動 (針對首頁精選區)
+        const slider = document.getElementById('portfolio-grid-home');
+        let isDown = false; let startX; let scrollLeft;
+        slider.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
+        slider.addEventListener('mouseleave', () => { isDown = false; });
+        slider.addEventListener('mouseup', () => { isDown = false; });
+        slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2; slider.scrollLeft = scrollLeft - walk; });
+
+        // 游標特效
         const cursor = document.getElementById('cursor');
         const cursorText = document.getElementById('cursor-text');
         
         document.addEventListener('mousemove', (e) => { 
             cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; 
-            
             const videoItem = e.target.closest('.is-video');
             if (videoItem) {
                 cursorText.style.left = (e.clientX + 15) + 'px';
                 cursorText.style.top = (e.clientY + 15) + 'px';
-                cursorText.classList.remove('hidden');
-                cursorText.classList.remove('opacity-0');
+                cursorText.classList.remove('hidden', 'opacity-0');
             } else {
                 cursorText.classList.add('opacity-0');
                 setTimeout(() => cursorText.classList.add('hidden'), 200);
@@ -517,9 +529,7 @@
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
             const parallaxBg = document.querySelectorAll('.parallax-bg');
-            parallaxBg.forEach(bg => {
-                if(bg) bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`;
-            });
+            parallaxBg.forEach(bg => { if(bg) bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`; });
         });
 
         const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
