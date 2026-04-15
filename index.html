@@ -162,28 +162,28 @@
         </div>
     </div>
 
-    <div id="page-services" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
+   <div id="page-services" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
         <h2 class="text-4xl md:text-6xl serif-tc mb-16 text-center fade-up">Our <br>Services.</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center fade-up">
             <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
                 <i class="fas fa-film text-5xl mb-6 text-blue-500"></i>
                 <h4 class="font-bold text-lg mb-3">影音製作</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">形象廣告、微電影、YouTube 節目企劃與高質感後製剪輯。</p>
+                <p class="text-xs text-gray-500 leading-relaxed">短影音剪輯、YT 長片剪輯、專業拍攝</p>
             </div>
             <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
                 <i class="fas fa-pen-nib text-5xl mb-6 text-amber-500"></i>
-                <h4 class="font-bold text-lg mb-3">2D / 3D 動畫</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">MG 動畫、角色 IP 授權、3D 建模與視覺特效合成。</p>
+                <h4 class="font-bold text-lg mb-3">2D 動畫</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">MG 動畫製作、IP 角色動態設計</p>
             </div>
             <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
                 <i class="fas fa-bezier-curve text-5xl mb-6 text-purple-500"></i>
                 <h4 class="font-bold text-lg mb-3">視覺圖文設計</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">商業懶人包、社群貼文排版、品牌 CIS 識別與包裝設計。</p>
+                <p class="text-xs text-gray-500 leading-relaxed">Banner 設計、Landing Page、EDM、廣告素材</p>
             </div>
             <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
                 <i class="fas fa-bullhorn text-5xl mb-6 text-green-500"></i>
-                <h4 class="font-bold text-lg mb-3">品牌社群行銷</h4>
-                <p class="text-xs text-gray-500 leading-relaxed">社群代操、廣告投放策略、KOL 媒合與數位行銷活動企劃。</p>
+                <h4 class="font-bold text-lg mb-3">影音腳本發想</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">品牌故事、廣告腳本企劃、短影音創意發想</p>
             </div>
         </div>
     </div>
@@ -201,33 +201,76 @@
             </div>
         </div>
         
-        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid-all"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8" id="portfolio-grid-all"></div>
         <div id="empty-state-all" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">此分類目前尚無作品。</div>
     </div>
 
-    <div id="page-contact" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[800px] mx-auto min-h-screen">
-        <h2 class="text-4xl md:text-6xl serif-tc mb-6 text-center fade-up">Contact <br>Us.</h2>
-        <p class="text-center text-gray-400 mb-12 tracking-widest fade-up">準備好開始您的專案了嗎？填寫表單與我們聯繫！</p>
-        
-        <form id="contact-form" class="space-y-6 fade-up bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-gray-900">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">您的稱呼 Name</label>
-                    <input type="text" id="contact-name" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">聯絡信箱 Email</label>
-                    <input type="email" id="contact-email-input" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition" required>
+  <div id="page-contact" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1200px] mx-auto min-h-screen">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-16 fade-up">
+            
+            <div class="lg:col-span-2 space-y-8">
+                <h2 class="text-4xl md:text-5xl serif-tc mb-6">聯絡我們<br><span class="text-2xl text-gray-500 font-light mt-2 block">Contact Us.</span></h2>
+                <div class="space-y-8 text-sm text-gray-400 tracking-wider leading-relaxed">
+                    <p>
+                        <strong class="text-white block mb-1">工作室地址 Address</strong>
+                        台南市永康區復華三街56號2F
+                    </p>
+                    <p>
+                        <strong class="text-white block mb-1">聯絡信箱 Email</strong>
+                        <a id="dyn-contact-email-page" href="mailto:jayran.tn@gmail.com" class="hover:text-white transition">jayran.tn@gmail.com</a>
+                    </p>
+                    <p>
+                        <strong class="text-white block mb-1">營業時間 Hours</strong>
+                        9:30am - 18:30pm
+                    </p>
                 </div>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">專案需求 Message</label>
-                <textarea id="contact-msg" rows="4" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition resize-none" required></textarea>
+
+            <div class="lg:col-span-3">
+                <form id="contact-form" class="space-y-8 bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-gray-900 relative overflow-hidden shadow-2xl">
+                    
+                    <div id="form-success-msg" class="absolute inset-0 bg-[#0a0a0a] z-10 hidden flex-col items-center justify-center text-center px-8">
+                        <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                        <h3 class="text-2xl font-bold text-white mb-2">送出成功！</h3>
+                        <p class="text-gray-400 text-sm mb-8">我們已收到您的專案需求，將會盡快與您聯繫。</p>
+                        <button type="button" onclick="resetForm()" class="px-8 py-3 border border-gray-700 rounded-full hover:bg-white hover:text-black transition uppercase tracking-widest text-xs font-bold">再寫一封</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">公司 / 品牌名稱</label>
+                            <input type="text" id="contact-name" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">姓名 / 聯絡人</label>
+                            <input type="text" id="contact-person" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">聯絡信箱 Email</label>
+                            <input type="email" id="contact-email-input" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">洽詢業務 Service</label>
+                            <select id="contact-service" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition appearance-none cursor-pointer">
+                                <option value="影片剪輯" class="bg-gray-900 text-white">影片剪輯</option>
+                                <option value="MG動畫製作" class="bg-gray-900 text-white">MG動畫製作</option>
+                                <option value="圖文製作" class="bg-gray-900 text-white">圖文製作</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">專案描述 Message</label>
+                        <textarea id="contact-msg" rows="3" class="w-full bg-transparent border-b border-gray-700 py-2 text-white outline-none focus:border-white transition resize-none" required></textarea>
+                    </div>
+                    <div class="flex justify-end pt-4">
+                        <button type="button" id="btn-send" onclick="sendEmail()" class="group flex items-center gap-3 text-sm font-bold uppercase tracking-widest hover:text-gray-300 transition">
+                            <span>送出 Send</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <button type="button" onclick="sendEmail()" class="w-full bg-white text-black font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-gray-300 transition">
-                發送訊息 Send Message
-            </button>
-        </form>
+        </div>
     </div>
 
     <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
@@ -317,23 +360,40 @@
                         document.getElementById('dyn-contact-text').innerHTML = data.contactText;
                     }
                 }
-                if(data.email) {
+               if(data.email) {
                     targetEmail = data.email;
                     document.getElementById('dyn-contact-email').innerText = data.email;
                     document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
+                    const pageEmail = document.getElementById('dyn-contact-email-page');
+                    if(pageEmail) { pageEmail.innerText = data.email; pageEmail.href = "mailto:" + data.email; }
                 }
             }
         }, (error) => console.error(error));
 
+       // 模擬無後台 API 的直接送出動畫效果
         window.sendEmail = function() {
             const name = document.getElementById('contact-name').value;
             const email = document.getElementById('contact-email-input').value;
             const msg = document.getElementById('contact-msg').value;
-            if(!name || !email || !msg) return alert("請完整填寫表單！");
+            const btn = document.getElementById('btn-send');
             
-            const subject = encodeURIComponent(`[官網諮詢] 來自 ${name} 的專案需求`);
-            const body = encodeURIComponent(`姓名：${name}\n信箱：${email}\n\n需求內容：\n${msg}`);
-            window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+            if(!name || !email || !msg) return alert("請完整填寫必填欄位！");
+            
+            // 點擊後變更按鈕狀態為處理中
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="ml-2">處理中...</span>';
+            btn.disabled = true;
+
+            // 模擬傳送延遲 1.5 秒後顯示成功畫面
+            setTimeout(() => {
+                document.getElementById('form-success-msg').style.display = 'flex';
+                btn.innerHTML = '<span>送出 Send</span><i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>';
+                btn.disabled = false;
+            }, 1500);
+        };
+
+        window.resetForm = function() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('form-success-msg').style.display = 'none';
         };
 
         // 2. 抓取作品集資料
