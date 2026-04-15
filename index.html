@@ -20,6 +20,7 @@
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
 
+        /* 游標特效 */
         .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
         #cursor-text { position: fixed; pointer-events: none; z-index: 100000; background: white; color: black; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; transform: translate(15px, 15px); transition: opacity 0.2s; white-space: nowrap; }
 
@@ -40,9 +41,88 @@
         .view-page { display: none; animation: fadeInPage 0.6s ease forwards; }
         .view-page.active { display: block; }
         @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes scrollDown { 0% { transform: translateY(-100%); } 50% { transform: translateY(100%); } 100% { transform: translateY(100%); } }
 
         .timeline-dot { position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #050505; }
+
+        /* ================= 滾動特效專用樣式 ================= */
+        /* 將首頁區塊加高，創造滾動空間 */
+        #home-scroll-container {
+            height: 250vh; /* 提供足夠的滾動距離 */
+            position: relative;
+        }
+
+        /* 鎖定在畫面中的視覺區域 */
+        #hero-sticky-view {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-col;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 雲朵圖片容器 */
+        .cloud-layer {
+            position: absolute;
+            top: 0;
+            height: 100vh;
+            width: 50vw; /* 佔據半個螢幕寬度 */
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            /* 預設隱藏在畫面兩側之外 */
+        }
+        
+        #cloud-left {
+            left: 0;
+            transform: translateX(-100%);
+            justify-content: flex-start;
+        }
+        
+        #cloud-right {
+            right: 0;
+            transform: translateX(100%);
+            justify-content: flex-end;
+        }
+
+        /* 真實雲朵圖片的樣式 */
+        .real-cloud-img {
+            height: 120%; /* 稍微放大確保遮蔽效果 */
+            width: auto;
+            max-width: none;
+            object-fit: cover;
+            /* 配合背景稍微降低亮度或加上混合模式 (可依您實際圖檔調整) */
+            opacity: 0.9;
+        }
+
+        #eng-title-group {
+            position: absolute;
+            z-index: 10; /* 在雲朵之下 */
+            text-align: center;
+            width: 100%;
+        }
+
+        #chi-title-group {
+            position: absolute;
+            z-index: 30; /* 在雲朵之上 */
+            text-align: center;
+            width: 100%;
+            opacity: 0; /* 初始隱藏 */
+            transform: translateY(20px); /* 初始稍微偏下 */
+        }
+
+        /* 您的專屬毛筆字圖片樣式 */
+        .chi-brush-img {
+            max-height: 300px; /* 依據您的字體圖片大小調整 */
+            width: auto;
+            margin: 0 auto;
+            /* 可選：加上一點陰影讓它在雲霧中更立體 */
+            filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.5));
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-gray-700 selection:text-white">
@@ -54,7 +134,7 @@
         <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran Studio</div>
     </div>
 
-    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/90 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm">
+    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/90 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm transition-transform duration-300" id="main-nav">
         <div class="cursor-pointer" onclick="switchPage('home')">
             <img src="LOGO杰冉-09.png" alt="Jayran Studio" class="h-8 md:h-10 hover:opacity-80 transition" onerror="this.outerHTML='<span class=\'text-xl font-bold tracking-[0.2em] uppercase text-white\'>Jayran Studio</span>'">
         </div>
@@ -68,44 +148,69 @@
     </nav>
 
     <div id="page-home" class="view-page active">
-        <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
-            <div class="absolute inset-0 z-[-1]">
-                <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none parallax-bg">
-                    <source src="0_Sky_Contrast_1920x1080.mp4" type="video/mp4">
-                </video>
-                <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
-                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
-            </div>
-            
-            <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
-                Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
-            </h1>
-            <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
-                杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
-            </p>
-        </header>
+        
+        <div id="home-scroll-container">
+            <div id="hero-sticky-view">
+                
+                <div class="absolute inset-0 z-0">
+                    <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none">
+                        <source src="0_Sky_Contrast_1920x1080.mp4" type="video/mp4">
+                    </video>
+                    <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
+                </div>
+                
+                <div id="eng-title-group" class="flex flex-col items-center justify-center h-full">
+                    <h1 id="dyn-h1" class="text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+                        Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
+                    </h1>
+                    <p id="dyn-sub" class="text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4">
+                        杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
+                    </p>
+                </div>
 
-        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900">
+                <div id="cloud-left" class="cloud-layer">
+                    <img src="your-cloud-left.png" alt="" class="real-cloud-img" style="object-position: left center;" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='rgba(255,255,255,0.1)'; this.parentElement.style.filter='blur(40px)';">
+                </div>
+                
+                <div id="cloud-right" class="cloud-layer">
+                    <img src="your-cloud-right.png" alt="" class="real-cloud-img" style="object-position: right center;" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='rgba(255,255,255,0.1)'; this.parentElement.style.filter='blur(40px)';">
+                </div>
+
+                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none">
+                    <img src="your-brush-text.png" alt="杰冉" class="chi-brush-img" onerror="this.outerHTML='<h1 class=\'text-6xl md:text-9xl font-bold tracking-widest text-white drop-shadow-2xl\' style=\'font-family: serif;\'>杰冉</h1>'">
+                </div>
+
+                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-40 pointer-events-none">
+                    <div class="flex flex-col items-center text-white">
+                        <span class="text-[10px] tracking-[0.3em] uppercase mb-2">Scroll</span>
+                        <div class="w-[1px] h-8 bg-white/30 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900 relative z-10 bg-[#050505]">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
                 <div class="stat-box cursor-default group">
-                    <i class="fas fa-video text-4xl text-gray-600 mb-4 transition"></i>
+                    <i class="fas fa-video text-4xl text-gray-600 mb-4 transition group-hover:text-blue-500"></i>
                     <h3 class="text-4xl font-bold mb-2 stat-num" data-val="100" data-suffix="+">0+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
                 </div>
                 <div class="stat-box cursor-default group">
-                    <i class="fas fa-eye text-4xl text-gray-600 mb-4 transition"></i>
+                    <i class="fas fa-eye text-4xl text-gray-600 mb-4 transition group-hover:text-purple-500"></i>
                     <h3 class="text-4xl font-bold mb-2 stat-num" data-val="2500" data-suffix="K+">0K+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
                 </div>
                 <div class="stat-box cursor-default group">
-                    <i class="fas fa-handshake text-4xl text-gray-600 mb-4 transition"></i>
+                    <i class="fas fa-handshake text-4xl text-gray-600 mb-4 transition group-hover:text-amber-500"></i>
                     <h3 class="text-4xl font-bold mb-2 stat-num" data-val="5" data-suffix="+">0+</h3>
                     <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
                 </div>
             </div>
         </section>
 
-        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto overflow-hidden">
+        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto overflow-hidden relative z-10 bg-[#050505]">
             <div class="flex flex-col items-center mb-16 fade-up">
                 <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-4">Selected Works.</h2>
                 <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出</p>
@@ -254,9 +359,10 @@
         </div>
     </div>
 
-    <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
+    <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10 relative z-10 bg-[#050505]">
         <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
             <h2 id="dyn-contact-text" class="text-2xl md:text-3xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
+            
             <div class="flex gap-4">
                 <a href="https://www.facebook.com/profile.php?id=61581644777570&locale=zh_TW" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition duration-300 text-lg shadow-lg">
                     <i class="fab fa-facebook-f"></i>
@@ -302,7 +408,7 @@
         const db = getFirestore(app);
         let targetEmail = "jayran.tn@gmail.com"; 
 
-        // 秒開網頁載入邏輯
+        // 載入畫面控制
         window.addEventListener('load', () => {
             const loader = document.getElementById('global-loader');
             if(loader) {
@@ -384,7 +490,7 @@
                 btn.disabled = false;
             })
             .catch(error => {
-                alert("目前無法傳送，請稍後再試或直接來信。");
+                alert("傳送系統暫時忙碌，請稍後再試或直接來信。");
                 btn.innerHTML = '<span>送出 Send</span><i class="fas fa-arrow-right transform group-hover:translate-x-2 transition"></i>';
                 btn.disabled = false;
             });
@@ -402,13 +508,12 @@
 
         onSnapshot(collection(db, "jayran_works"), (snapshot) => {
             allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // 修復排序 Bug
             allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
             renderPortfolioHome();
             renderPortfolioAll();
         }, (error) => console.error(error));
 
-        // SPA 頁面切換
+        // SPA 頁面切換邏輯
         window.switchPage = function(pageId) {
             document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
             const targetPage = document.getElementById('page-' + pageId);
@@ -418,10 +523,20 @@
             const activeNav = document.querySelector(`.nav-link[data-target="${pageId}"]`);
             if(activeNav) activeNav.classList.add('text-white');
 
+            // 回到頂部並關閉可能開啟的導航選單
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (pageId === 'work') renderPortfolioAll();
+            
+            // 若不在首頁，隱藏導航列背景的透明度以適應其他頁面
+            const nav = document.getElementById('main-nav');
+            if(pageId !== 'home') {
+                nav.classList.replace('bg-gradient-to-b', 'bg-black');
+            } else {
+                nav.classList.replace('bg-black', 'bg-gradient-to-b');
+            }
         };
 
+        // Lightbox
         window.openLightbox = function(url) {
             const lb = document.getElementById('lightbox');
             const img = document.getElementById('lightbox-img');
@@ -456,6 +571,7 @@
             renderPortfolioAll();
         }
 
+        // 首頁精選 (固定 5 個)
         function renderPortfolioHome() {
             const grid = document.getElementById('portfolio-grid-home');
             grid.innerHTML = '';
@@ -467,6 +583,7 @@
             });
         }
 
+        // Works 分類總覽
         function renderPortfolioAll() {
             const grid = document.getElementById('portfolio-grid-all');
             const emptyState = document.getElementById('empty-state-all');
@@ -495,6 +612,7 @@
             });
         }
 
+        // 共用卡片生成邏輯 (影片虛化背景防黑邊)
         function buildWorkCard(work, isHome) {
             let categoryLabel = 'Graphic Design';
             if(work.category === 'video') categoryLabel = 'Video Production';
@@ -506,14 +624,13 @@
             let videoClass = isVideo ? 'is-video' : ''; 
             
             if (isVideo && work.youtubeId) {
-                const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
-                const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
                 clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
                 
+                // YouTube 縮圖虛化背景
                 const blurBgUrl = `https://img.youtube.com/vi/${work.youtubeId}/hqdefault.jpg`;
                 
                 mediaHTML = `
-                    <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center shadow-inner">
+                    <div class="w-full ${isHome ? 'aspect-[3/4]' : 'aspect-video'} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center shadow-inner">
                         <div class="absolute inset-0 bg-cover bg-center opacity-50 blur-2xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
                         <iframe class="relative z-10 w-full h-full transform scale-[1.05]" 
                                 src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
@@ -527,7 +644,7 @@
                     </div>`;
             } else {
                 clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
-                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-[3/4]' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
             }
 
             let tagsHTML = '';
@@ -547,7 +664,15 @@
             `;
         }
 
-        function updateScrollStats() {
+        // 雲朵滾動特效與數字拉霸
+        const scrollContainer = document.getElementById('home-scroll-container');
+        const engGroup = document.getElementById('eng-title-group');
+        const chiGroup = document.getElementById('chi-title-group');
+        const cloudLeft = document.getElementById('cloud-left');
+        const cloudRight = document.getElementById('cloud-right');
+
+        function updateScrollEffects() {
+            // 處理數字拉霸
             const stats = document.querySelectorAll('.stat-num');
             const windowHeight = window.innerHeight;
 
@@ -566,20 +691,50 @@
                 const currentVal = Math.floor(progress * endVal);
                 stat.innerHTML = currentVal + (stat.dataset.suffix || '');
             });
+
+            // 處理首頁雲朵特效 (只在首頁活動時計算)
+            if(document.getElementById('page-home').classList.contains('active') && scrollContainer) {
+                const scrollY = window.scrollY;
+                // 設定特效的觸發距離 (如 1.5 個螢幕高度內)
+                const maxScroll = window.innerHeight * 1.5; 
+                
+                let progress = scrollY / maxScroll;
+                progress = Math.max(0, Math.min(1, progress));
+
+                // 雲朵位移 (從外側 100% 移到 0%)
+                const translateX = (1 - progress) * 100;
+                if(cloudLeft) cloudLeft.style.transform = `translateX(-${translateX}%)`;
+                if(cloudRight) cloudRight.style.transform = `translateX(${translateX}%)`;
+
+                // 英文淡出
+                let engOpacity = 1 - (progress * 2);
+                engOpacity = Math.max(0, engOpacity);
+                if(engGroup) engGroup.style.opacity = engOpacity;
+
+                // 中文浮現
+                let chiProgress = (progress - 0.4) / 0.6;
+                chiProgress = Math.max(0, Math.min(1, chiProgress));
+                if(chiGroup) {
+                    chiGroup.style.opacity = chiProgress;
+                    const chiY = 20 - (chiProgress * 20);
+                    chiGroup.style.transform = `translateY(${chiY}px)`;
+                }
+            }
         }
         
-        window.addEventListener('scroll', updateScrollStats);
-        window.addEventListener('resize', updateScrollStats);
-        setTimeout(updateScrollStats, 100);
+        window.addEventListener('scroll', updateScrollEffects);
+        window.addEventListener('resize', updateScrollEffects);
+        setTimeout(updateScrollEffects, 100);
 
+        // 游標特效
         const cursor = document.getElementById('cursor');
         const cursorText = document.getElementById('cursor-text');
         
         document.addEventListener('mousemove', (e) => { 
             if(cursor) { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; }
             
-            const watchTarget = e.target.closest('.is-video') || e.target.closest('.portfolio-item');
-            if (watchTarget && cursorText) {
+            const videoItem = e.target.closest('.is-video');
+            if (videoItem && cursorText) {
                 cursorText.style.left = (e.clientX + 15) + 'px';
                 cursorText.style.top = (e.clientY + 15) + 'px';
                 cursorText.classList.remove('hidden', 'opacity-0');
@@ -598,12 +753,6 @@
                 cursor.style.transform = 'translate(-50%, -50%) scale(1)'; 
                 cursor.style.backgroundColor = 'transparent'; 
             }
-        });
-        
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const parallaxBg = document.querySelectorAll('.parallax-bg');
-            parallaxBg.forEach(bg => { if(bg) bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`; });
         });
 
         const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
