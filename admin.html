@@ -144,10 +144,9 @@
                 <button class="tab-btn font-bold text-amber-600 border-b-2 border-amber-500 px-3 pb-2 text-lg" onclick="switchView('animation', this)">動畫專案</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('video', this)">影音專案</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('graphic', this)">圖文專案</button>
+                <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('featured', this)"><i class="fas fa-star mr-1 text-green-500"></i>首頁精選排序</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('settings', this)"><i class="fas fa-cog mr-1"></i>網站前台設定</button>
                 <div class="flex-1"></div>
-                <button onclick="adminLogout()" class="text-gray-400 hover:text-red-500 font-bold text-sm px-3 pb-2"><i class="fas fa-sign-out-alt mr-1"></i>登出</button>
-            </div>
 
             <div id="view-works" class="block">
                 <div class="flex justify-between items-end mb-6">
@@ -444,10 +443,10 @@
             finally { hideLoader(); saveBtn.disabled = false; }
         });
 
-        window.switchView = function (type, btnEl) {
+      window.switchView = function (type, btnEl) {
             currentView = type;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800");
-            const colorMap = { animation: 'text-amber-600 border-amber-500', video: 'text-blue-600 border-blue-500', graphic: 'text-purple-600 border-purple-500', settings: 'text-gray-800 border-gray-800' };
+            const colorMap = { animation: 'text-amber-600 border-amber-500', video: 'text-blue-600 border-blue-500', graphic: 'text-purple-600 border-purple-500', featured: 'text-green-600 border-green-500', settings: 'text-gray-800 border-gray-800' };
             btnEl.className = `tab-btn font-bold ${colorMap[type] || 'text-blue-600 border-blue-500'} border-b-2 px-3 pb-2 text-lg`;
             if (type === 'settings') {
                 document.getElementById('view-works').classList.add('hidden'); document.getElementById('view-settings').classList.remove('hidden');
@@ -456,14 +455,14 @@
             }
         };
 
-        // 打勾防呆機制
-      window.toggleFeatured = async function(id) {
+        // 打勾防呆機制 (最多 10 個)
+        window.toggleFeatured = async function(id) {
             const work = allWorks.find(w => w.id === id);
             if(!work) return;
             if(!work.isFeatured) {
-                const featuredCount = allWorks.filter(w => w.isFeatured && w.category === work.category).length;
-                // 將這裡的 5 改成 10 
-                if(featuredCount >= 10) return alert("⚠️ 此分類的「首頁精選」最多只能設定 10 個！請先取消其他的。");
+                // 不分分類，全站首頁精選最多 10 個
+                const featuredCount = allWorks.filter(w => w.isFeatured).length;
+                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！請先取消其他的。");
             }
             showLoader("更新狀態...");
             await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
@@ -474,8 +473,19 @@
 
         function renderList() {
             const container = document.getElementById('sortable-list'); container.innerHTML = '';
-            const filtered = allWorks.filter(w => w.category === currentView);
-            if (filtered.length === 0) { container.innerHTML = '<div class="col-span-full py-10 text-center text-gray-400 font-bold">目前無作品，請從左側新增。</div>'; return; }
+            
+            // 如果點擊的是「首頁精選」，就過濾出所有打勾的，並依照 featuredOrder 排序
+            let filtered;
+            if (currentView === 'featured') {
+                filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder || 999) - (b.featuredOrder || 999));
+            } else {
+                filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order || 999) - (b.order || 999));
+            }
+
+            if (filtered.length === 0) { 
+                container.innerHTML = `<div class="col-span-full py-10 text-center text-gray-400 font-bold">${currentView === 'featured' ? '請先到各分類勾選首頁精選' : '目前無作品，請從左側新增。'}</div>`; 
+                return; 
+            }
 
             const badgeMap = { animation: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'ANIMATION' }, video: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'VIDEO' }, graphic: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'GRAPHIC' }};
 
@@ -505,10 +515,10 @@
                         ${tagBadge}
                         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 z-20">
                             <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
-                           <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition z-50" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition z-50" title="刪除"><i class="fas fa-trash text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition" title="刪除"><i class="fas fa-trash text-sm"></i></div>
                         </div>
-                        <button onclick="toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}" title="切換首頁精選">
+                        <button onclick="event.stopPropagation(); toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}" title="切換首頁精選">
                             <i class="fas fa-check text-xs"></i>
                         </button>
                     </div>
@@ -531,9 +541,26 @@
             const batch = writeBatch(db);
             document.querySelectorAll('#sortable-list > div').forEach((item, index) => {
                 const id = item.getAttribute('data-id');
-                if (id) { batch.update(doc(db, "jayran_works", id), { order: index }); const work = allWorks.find(w => w.id === id); if (work) work.order = index; }
+                if (id) { 
+                    // 根據當前所在的分頁，寫入不同的排序欄位
+                    if (currentView === 'featured') {
+                        batch.update(doc(db, "jayran_works", id), { featuredOrder: index }); 
+                        const work = allWorks.find(w => w.id === id); if (work) work.featuredOrder = index;
+                    } else {
+                        batch.update(doc(db, "jayran_works", id), { order: index }); 
+                        const work = allWorks.find(w => w.id === id); if (work) work.order = index;
+                    }
+                }
             });
-            try { await batch.commit(); allWorks.sort((a, b) => (a.order || 999) - (b.order || 999)); btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; } 
+            try { 
+                await batch.commit(); 
+                if (currentView === 'featured') {
+                    allWorks.sort((a, b) => (a.featuredOrder || 999) - (b.featuredOrder || 999)); 
+                } else {
+                    allWorks.sort((a, b) => (a.order || 999) - (b.order || 999)); 
+                }
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; 
+            } 
             catch (error) { alert("排序儲存失敗！"); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; } 
             finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); renderList(); }
         });
