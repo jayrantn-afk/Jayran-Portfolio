@@ -260,7 +260,6 @@
         let editingWorkId = null;
         let isHeroBgCleared = false; 
 
-        // 圖片壓縮與 Base64 轉換核心
         async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -386,7 +385,7 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "jayran_works"));
                 allWorks = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
+                allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
                 renderList();
             } catch (error) {
                 alert("⛔ 讀取作品失敗！請確認 Firestore 權限。");
@@ -472,7 +471,7 @@
             if(!work) return;
             if(!work.isFeatured) {
                 const featuredCount = allWorks.filter(w => w.isFeatured).length;
-                if(featuredCount >= 5) return alert("⚠️ 首頁精選最多只能設定 5 個！請先取消其他的。");
+                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！請先取消其他的。");
             }
             showLoader("更新狀態...");
             await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
@@ -486,9 +485,9 @@
             
             let filtered;
             if (currentView === 'featured') {
-                filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder || 999) - (b.featuredOrder || 999));
+                filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999));
             } else {
-                filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order || 999) - (b.order || 999));
+                filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
             }
 
             if (filtered.length === 0) { 
@@ -524,8 +523,8 @@
                         ${tagBadge}
                         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 z-20">
                             <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition" title="刪除"><i class="fas fa-trash text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition z-50" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition z-50" title="刪除"><i class="fas fa-trash text-sm"></i></div>
                         </div>
                         <button onclick="event.stopPropagation(); toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}" title="切換首頁精選">
                             <i class="fas fa-check text-xs"></i>
@@ -563,9 +562,9 @@
             try { 
                 await batch.commit(); 
                 if (currentView === 'featured') {
-                    allWorks.sort((a, b) => (a.featuredOrder || 999) - (b.featuredOrder || 999)); 
+                    allWorks.sort((a, b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)); 
                 } else {
-                    allWorks.sort((a, b) => (a.order || 999) - (b.order || 999)); 
+                    allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999)); 
                 }
                 btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; 
             } 
