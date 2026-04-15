@@ -48,9 +48,21 @@
                     <span id="edit-badge" class="hidden text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded animate-pulse">編輯模式</span>
                 </h2>
                 <div class="space-y-5">
-                    <div>
+                  <div>
                         <label class="block text-xs font-bold text-gray-500 mb-1">作品標題 <span class="text-red-500">*</span></label>
                         <input id="w-title" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg font-bold focus:border-blue-500 outline-none transition" placeholder="輸入標題...">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">自訂分類標籤 (選填)</label>
+                            <input id="w-tags" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm focus:border-blue-500 outline-none transition" placeholder="例如：小花藥師, 醫敏家">
+                        </div>
+                        <div class="flex items-center pt-5">
+                            <label class="flex items-center cursor-pointer group">
+                                <input type="checkbox" id="w-featured" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+                                <span class="ml-2 text-sm font-bold text-gray-600 group-hover:text-blue-600 transition">首頁精選展出</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div>
@@ -364,15 +376,16 @@
             }
         }
 
-        async function fetchSettings() {
+       async function fetchSettings() {
             const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                ['set-h1', 'set-h2', 'set-sub', 'set-sec-title', 'set-contact-text', 'set-contact-email'].forEach(id => {
-                    if(data[id.replace('set-', '').replace(/-([a-z])/g, g => g[1].toUpperCase())]) {
-                        document.getElementById(id).value = data[id.replace('set-', '').replace(/-([a-z])/g, g => g[1].toUpperCase())];
-                    }
-                });
+                if(data.h1) document.getElementById('set-h1').value = data.h1;
+                if(data.h2) document.getElementById('set-h2').value = data.h2;
+                if(data.sub) document.getElementById('set-sub').value = data.sub;
+                if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
+                if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
+                if(data.email) document.getElementById('set-contact-email').value = data.email; // 精準修復信箱讀取
             }
         }
 
@@ -477,7 +490,7 @@
         });
 
         // ============ 編輯功能 ============
-        window.editWork = function(id) {
+       window.editWork = function(id) {
             const work = allWorks.find(w => w.id === id);
             if (!work) return;
             
@@ -489,15 +502,16 @@
             document.getElementById('btn-cancel').classList.remove('hidden');
 
             document.getElementById('w-title').value = work.title;
+            document.getElementById('w-tags').value = work.tags || '';
+            document.getElementById('w-featured').checked = !!work.isFeatured;
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).checked = true;
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).dispatchEvent(new Event('change'));
 
-           if (work.category === 'video' || work.category === 'animation') {
+            if (work.category === 'video' || work.category === 'animation') {
                 document.getElementById('w-youtube').value = work.youtubeUrl || work.link || '';
                 document.getElementById('w-youtube').dispatchEvent(new Event('input'));
             } else {
-                // 【修復：移除 startsWith 限制，無論是舊網址還是本機壓縮圖，都能正確預覽與儲存】
-                if(work.imageUrl) {
+                if(work.imageUrl && work.imageUrl.startsWith('data:image')) {
                     document.getElementById('w-img-base64').value = work.imageUrl;
                     document.getElementById('w-img-preview').src = work.imageUrl;
                     document.getElementById('w-img-preview').classList.remove('hidden');
@@ -516,6 +530,8 @@
             document.getElementById('btn-cancel').classList.add('hidden');
             
             document.getElementById('w-title').value = '';
+            document.getElementById('w-tags').value = '';
+            document.getElementById('w-featured').checked = false;
             document.getElementById('w-youtube').value = '';
             document.getElementById('w-img-base64').value = '';
             document.getElementById('w-img-preview').src = '';
@@ -526,19 +542,6 @@
             document.getElementById('yt-preview-frame').src = '';
         };
 
-        window.deleteWork = async function (id) {
-            if (!confirm('確定要刪除這份作品嗎？')) return;
-            showLoader("刪除中...");
-            try {
-                if(editingWorkId === id) cancelEdit();
-                await deleteDoc(doc(db, "jayran_works", id));
-                allWorks = allWorks.filter(w => w.id !== id);
-                renderList();
-            } catch (error) { alert("刪除失敗！權限不足。"); }
-            finally { hideLoader(); }
-        };
-
-        // ============ 發佈/修改 作品 ============
         document.getElementById('btn-submit').addEventListener('click', async () => {
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
@@ -546,7 +549,12 @@
 
             if (!title) return alert("請輸入標題");
 
-            let docData = { title, category };
+            let docData = { 
+                title: title, 
+                category: category,
+                tags: document.getElementById('w-tags').value.trim(),
+                isFeatured: document.getElementById('w-featured').checked
+            };
 
             if (isVideo) {
                 const ytUrl = document.getElementById('w-youtube').value.trim();
@@ -558,8 +566,8 @@
                 docData.link = ytUrl;
             } else {
                 const b64 = document.getElementById('w-img-base64').value;
-                if (!b64) return alert("請點擊上傳圖片！");
-                docData.imageUrl = b64;
+                if (!b64 && !editingWorkId) return alert("請點擊上傳圖片！");
+                if (b64) docData.imageUrl = b64;
                 docData.link = document.getElementById('w-img-link').value.trim();
             }
 
@@ -581,16 +589,12 @@
                     const docRef = await addDoc(collection(db, "jayran_works"), docData);
                     allWorks.push({ id: docRef.id, ...docData });
                 }
-
                 cancelEdit(); 
-                
                 const tabBtn = document.querySelector(`.tab-btn[onclick*="'${category}'"]`);
                 if (tabBtn) tabBtn.click();
                 else { currentView = category; renderList(); }
-
             } catch (error) {
-                console.error("Upload Error:", error);
-                alert("⛔ 發佈/更新失敗！這通常是因為圖片太大超過限制。請重新上傳或選小一點的圖片。");
+                alert("⛔ 發佈/更新失敗！");
             } finally {
                 hideLoader();
                 submitBtn.disabled = false;
