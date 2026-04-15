@@ -312,20 +312,16 @@
             }, 1500); 
         });
 
-        // 1. 抓取動態文字與背景
+    // 1. 抓取動態文字與背景
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 
+                // 【強制固定播放 MP4 影片，無視資料庫的舊圖片】
                 const videoEl = document.getElementById('hero-bg-video');
                 const imgEl = document.getElementById('hero-bg-img');
-                if(data.heroBg) {
-                    if(videoEl) videoEl.classList.add('hidden');
-                    if(imgEl) { imgEl.src = data.heroBg; imgEl.classList.remove('hidden'); }
-                } else {
-                    if(videoEl) videoEl.classList.remove('hidden');
-                    if(imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
-                }
+                if(videoEl) videoEl.classList.remove('hidden');
+                if(imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
 
                 if(data.h1 || data.h2) document.getElementById('dyn-h1').innerHTML = `${data.h1} <br> <span class="italic font-light text-gray-300">${data.h2}</span>`;
                 if(data.sub) document.getElementById('dyn-sub').innerText = data.sub;
