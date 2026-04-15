@@ -48,15 +48,15 @@
                     <span id="edit-badge" class="hidden text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded animate-pulse">編輯模式</span>
                 </h2>
                 <div class="space-y-5">
-                  <div>
+                    <div>
                         <label class="block text-xs font-bold text-gray-500 mb-1">作品標題 <span class="text-red-500">*</span></label>
                         <input id="w-title" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg font-bold focus:border-blue-500 outline-none transition" placeholder="輸入標題...">
                     </div>
                     <div class="flex gap-4">
-                      <div class="flex-1">
+                        <div class="flex-1">
                             <label class="block text-xs font-bold text-gray-500 mb-1">自訂分類標籤 (選填)</label>
                             <select id="w-tags" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg text-sm font-bold focus:border-blue-500 outline-none transition">
-                                <option value="">無標籤 (請先至下方網站設定建立)</option>
+                                <option value="">無標籤 (請先至網站設定建立)</option>
                             </select>
                         </div>
                         <div class="flex items-center pt-5">
@@ -139,7 +139,8 @@
             </div>
         </aside>
 
-        <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col">
+        <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col relative">
+            <div class="absolute bottom-4 right-4 text-[9px] text-gray-400 tracking-widest font-mono font-bold z-50">V 3.5.0 JAYRAN CORE</div>
             <div class="flex gap-4 mb-6 border-b border-gray-200 pb-2 flex-wrap">
                 <button class="tab-btn font-bold text-amber-600 border-b-2 border-amber-500 px-3 pb-2 text-lg" onclick="switchView('animation', this)">動畫專案</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('video', this)">影音專案</button>
@@ -147,6 +148,8 @@
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('featured', this)"><i class="fas fa-star mr-1 text-green-500"></i>首頁精選排序</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('settings', this)"><i class="fas fa-cog mr-1"></i>網站前台設定</button>
                 <div class="flex-1"></div>
+                <button onclick="adminLogout()" class="text-gray-400 hover:text-red-500 font-bold text-sm px-3 pb-2"><i class="fas fa-sign-out-alt mr-1"></i>登出</button>
+            </div>
 
             <div id="view-works" class="block">
                 <div class="flex justify-between items-end mb-6">
@@ -167,9 +170,8 @@
                     <div class="space-y-6">
                         
                         <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖</h3>
+                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖 (若留空則播影片)</h3>
                             <div>
-                                <label class="block text-xs font-bold text-blue-600 mb-1">上傳新背景 (直接點擊上傳)</label>
                                 <input type="file" id="set-hero-bg-input" accept="image/*" class="hidden">
                                 <div id="set-hero-bg-box" class="border-2 border-dashed border-blue-300 bg-white rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50 transition" onclick="document.getElementById('set-hero-bg-input').click()">
                                     <img id="set-hero-bg-preview" class="hidden max-h-40 mx-auto rounded object-contain">
@@ -179,7 +181,7 @@
                                     </div>
                                 </div>
                                 <input type="hidden" id="set-hero-bg-base64">
-                                <p class="text-xs text-blue-500 mt-2 font-bold">※ 若不更換請留空。系統會自動壓縮處理。</p>
+                                <button onclick="clearHeroBg()" class="mt-2 text-xs font-bold text-red-500 hover:text-red-700"><i class="fas fa-trash"></i> 移除背景圖片 (恢復播放影片)</button>
                             </div>
                         </div>
 
@@ -212,6 +214,7 @@
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-gray-500"></i>作品區標題</h3>
                             <input id="set-sec-title" class="w-full border p-3 rounded-lg font-bold" placeholder="Selected<br>Works.">
                         </div>
+
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-gray-500"></i>頁尾聯絡資訊</h3>
                             <div class="grid grid-cols-2 gap-4">
@@ -255,8 +258,9 @@
         let currentView = 'animation';
         let sortableInstance = null;
         let editingWorkId = null;
+        let isHeroBgCleared = false; // 紀錄是否清除了背景圖
 
-        // ============ 圖片壓縮與 Base64 轉換核心 (保證不超過資料庫上限) ============
+        // 圖片壓縮與 Base64 轉換核心
         async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -277,24 +281,35 @@
             });
         }
 
-        // ============ 綁定上傳按鈕事件 ============
+        // 綁定上傳按鈕事件
         document.getElementById('set-hero-bg-input').addEventListener('change', async (e) => {
             const f = e.target.files[0];
             if(!f) return;
             showLoader("處理背景圖中...");
-            const base64 = await compressImage(f, 1600, 900, 0.7); // 背景適度壓縮
+            const base64 = await compressImage(f, 1600, 900, 0.7); 
             document.getElementById('set-hero-bg-base64').value = base64;
             document.getElementById('set-hero-bg-preview').src = base64;
             document.getElementById('set-hero-bg-preview').classList.remove('hidden');
             document.getElementById('set-hero-bg-placeholder').classList.add('hidden');
+            isHeroBgCleared = false;
             hideLoader();
         });
+
+        window.clearHeroBg = function() {
+            document.getElementById('set-hero-bg-base64').value = '';
+            document.getElementById('set-hero-bg-preview').src = '';
+            document.getElementById('set-hero-bg-preview').classList.add('hidden');
+            document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
+            document.getElementById('set-hero-bg-input').value = '';
+            isHeroBgCleared = true;
+            alert("已預計移除背景圖片。請點擊最下方的「儲存設定」來生效，前台將恢復播放本機影片。");
+        };
 
         document.getElementById('w-img-input').addEventListener('change', async (e) => {
             const f = e.target.files[0];
             if(!f) return;
             showLoader("處理圖片中...");
-            const base64 = await compressImage(f, 800, 800, 0.65); // 作品圖高度壓縮，防資料庫爆滿
+            const base64 = await compressImage(f, 800, 800, 0.65);
             document.getElementById('w-img-base64').value = base64;
             document.getElementById('w-img-preview').src = base64;
             document.getElementById('w-img-preview').classList.remove('hidden');
@@ -302,14 +317,14 @@
             hideLoader();
         });
 
-        // ============ YouTube 工具函式 ============
+        // YouTube 工具函式
         function extractYouTubeId(url) {
             if (!url) return null;
             let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
             return match ? match[1] : null;
         }
 
-        // ============ 表單與分類連動 ============
+        // 表單與分類連動
         const catRadios = document.querySelectorAll('input[name="w-cat"]');
         catRadios.forEach(radio => {
             radio.addEventListener('change', () => {
@@ -342,7 +357,7 @@
             }, 500);
         });
 
-        // ============ 登入機制 ============
+        // 登入機制
         window.onload = () => {
             const savedLogin = localStorage.getItem('jayran_admin_auth');
             if (savedLogin && (Date.now() - savedLogin < 12 * 60 * 60 * 1000)) {
@@ -364,7 +379,7 @@
         document.getElementById('login-pwd').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
         window.adminLogout = function () { localStorage.removeItem('jayran_admin_auth'); location.reload(); };
 
-        // ============ 初始化 ============
+        // 初始化
         async function initAdminData() {
             showLoader("連接資料庫中...");
             await fetchData();
@@ -383,11 +398,22 @@
             }
         }
 
-     async function fetchSettings() {
+        function updateTagSelect(tagsString) {
+            const select = document.getElementById('w-tags');
+            if(!select) return;
+            select.innerHTML = '<option value="">無標籤</option>';
+            if(tagsString) {
+                tagsString.split(',').forEach(t => {
+                    const tag = t.trim();
+                    if(tag) select.innerHTML += `<option value="${tag}">${tag}</option>`;
+                });
+            }
+        }
+
+        async function fetchSettings() {
             const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // 恢復最穩定的獨立讀取寫法，保證資料不遺失
                 if(data.h1) document.getElementById('set-h1').value = data.h1;
                 if(data.h2) document.getElementById('set-h2').value = data.h2;
                 if(data.sub) document.getElementById('set-sub').value = data.sub;
@@ -398,18 +424,6 @@
                     document.getElementById('set-global-tags').value = data.globalTags;
                     updateTagSelect(data.globalTags);
                 }
-            }
-        }
-
-        function updateTagSelect(tagsString) {
-            const select = document.getElementById('w-tags');
-            if(!select) return;
-            select.innerHTML = '<option value="">無標籤</option>';
-            if(tagsString) {
-                tagsString.split(',').forEach(t => {
-                    const tag = t.trim();
-                    if(tag) select.innerHTML += `<option value="${tag}">${tag}</option>`;
-                });
             }
         }
 
@@ -433,17 +447,21 @@
                     document.getElementById('set-hero-bg-base64').value = '';
                     document.getElementById('set-hero-bg-preview').classList.add('hidden');
                     document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
+                } else if (isHeroBgCleared) {
+                    data.heroBg = ""; // 明確清空
                 } else {
                     const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
                     if (docSnap.exists() && docSnap.data().heroBg) data.heroBg = docSnap.data().heroBg;
                 }
+
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
+                isHeroBgCleared = false; // 重置狀態
                 alert("✅ 網站設定已更新！");
             } catch (error) { alert("⛔ 儲存失敗！"); } 
             finally { hideLoader(); saveBtn.disabled = false; }
         });
 
-      window.switchView = function (type, btnEl) {
+        window.switchView = function (type, btnEl) {
             currentView = type;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800");
             const colorMap = { animation: 'text-amber-600 border-amber-500', video: 'text-blue-600 border-blue-500', graphic: 'text-purple-600 border-purple-500', featured: 'text-green-600 border-green-500', settings: 'text-gray-800 border-gray-800' };
@@ -460,7 +478,6 @@
             const work = allWorks.find(w => w.id === id);
             if(!work) return;
             if(!work.isFeatured) {
-                // 不分分類，全站首頁精選最多 10 個
                 const featuredCount = allWorks.filter(w => w.isFeatured).length;
                 if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！請先取消其他的。");
             }
@@ -474,7 +491,6 @@
         function renderList() {
             const container = document.getElementById('sortable-list'); container.innerHTML = '';
             
-            // 如果點擊的是「首頁精選」，就過濾出所有打勾的，並依照 featuredOrder 排序
             let filtered;
             if (currentView === 'featured') {
                 filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder || 999) - (b.featuredOrder || 999));
@@ -542,7 +558,6 @@
             document.querySelectorAll('#sortable-list > div').forEach((item, index) => {
                 const id = item.getAttribute('data-id');
                 if (id) { 
-                    // 根據當前所在的分頁，寫入不同的排序欄位
                     if (currentView === 'featured') {
                         batch.update(doc(db, "jayran_works", id), { featuredOrder: index }); 
                         const work = allWorks.find(w => w.id === id); if (work) work.featuredOrder = index;
@@ -565,8 +580,8 @@
             finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); renderList(); }
         });
 
-        // ============ 編輯功能 ============
-       window.editWork = function(id) {
+        // 編輯功能
+        window.editWork = function(id) {
             const work = allWorks.find(w => w.id === id);
             if (!work) return;
             
@@ -618,6 +633,19 @@
             document.getElementById('yt-preview-frame').src = '';
         };
 
+        window.deleteWork = async function (id) {
+            if (!confirm('確定要刪除這份作品嗎？')) return;
+            showLoader("刪除中...");
+            try {
+                if(editingWorkId === id) cancelEdit();
+                await deleteDoc(doc(db, "jayran_works", id));
+                allWorks = allWorks.filter(w => w.id !== id);
+                renderList();
+            } catch (error) { alert("刪除失敗！權限不足。"); }
+            finally { hideLoader(); }
+        };
+
+        // 發佈/修改 作品
         document.getElementById('btn-submit').addEventListener('click', async () => {
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
@@ -662,15 +690,23 @@
                     const catWorks = allWorks.filter(w => w.category === category);
                     const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
                     docData.order = maxOrder + 1;
+                    // 如果被設為精選，也給一個初始精選排序
+                    if (docData.isFeatured) {
+                        const featuredWorks = allWorks.filter(w => w.isFeatured);
+                        docData.featuredOrder = featuredWorks.length > 0 ? Math.max(...featuredWorks.map(w => w.featuredOrder || 0)) + 1 : 0;
+                    }
                     const docRef = await addDoc(collection(db, "jayran_works"), docData);
                     allWorks.push({ id: docRef.id, ...docData });
                 }
+
                 cancelEdit(); 
-                const tabBtn = document.querySelector(`.tab-btn[onclick*="'${category}'"]`);
+                const tabBtn = document.querySelector(`.tab-btn[onclick*="'${currentView === 'featured' ? 'featured' : category}'"]`);
                 if (tabBtn) tabBtn.click();
                 else { currentView = category; renderList(); }
+
             } catch (error) {
-                alert("⛔ 發佈/更新失敗！");
+                console.error("Upload Error:", error);
+                alert("⛔ 發佈/更新失敗！這通常是因為圖片太大超過限制。請重新上傳或選小一點的圖片。");
             } finally {
                 hideLoader();
                 submitBtn.disabled = false;
