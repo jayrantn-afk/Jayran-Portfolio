@@ -6,7 +6,6 @@
     <title>JAYRAN STUDIO | 杰冉影像</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;500;700;900&display=swap" rel="stylesheet">
@@ -21,7 +20,9 @@
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
 
+        /* 基礎游標與跟隨文字 */
         .custom-cursor { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.2s ease, background-color 0.2s ease; transform: translate(-50%, -50%); mix-blend-mode: difference; }
+        #cursor-text { position: fixed; pointer-events: none; z-index: 100000; background: white; color: black; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; transform: translate(15px, 15px); transition: opacity 0.2s; white-space: nowrap; }
 
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-up.in-view { opacity: 1; transform: translateY(0); }
@@ -29,7 +30,6 @@
         .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
         .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.8); }
         .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1); }
-        
         .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; }
         .portfolio-item:hover .portfolio-overlay { opacity: 1; }
 
@@ -39,109 +39,214 @@
         .filter-btn:hover::after, .filter-btn.active::after { width: 100%; }
 
         .hero-gradient { background: radial-gradient(circle at center, transparent 0%, #050505 100%); }
+        
+        /* SPA 頁面切換控制 */
+        .view-page { display: none; animation: fadeInPage 0.6s ease forwards; }
+        .view-page.active { display: block; }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scrollDown { 0% { transform: translateY(-100%); } 50% { transform: translateY(100%); } 100% { transform: translateY(100%); } }
+
+        /* Timeline 大事記樣式 */
+        .timeline-dot { position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #050505; }
     </style>
 </head>
 <body class="antialiased selection:bg-gray-700 selection:text-white">
 
     <div class="custom-cursor hidden md:block" id="cursor"></div>
+    <div id="cursor-text" class="hidden opacity-0">點擊前往 YouTube</div>
 
     <div id="global-loader" class="fixed inset-0 bg-[#050505] z-[100000] flex flex-col justify-center items-center transition-opacity duration-700">
         <div class="text-3xl tracking-[0.3em] font-light uppercase animate-pulse">Jayran Studio</div>
     </div>
 
-    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/80 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm">
-        <div class="text-xl md:text-2xl font-bold tracking-[0.2em] uppercase cursor-pointer text-white hover:text-gray-300 transition" onclick="window.scrollTo(0,0)">
-            Jayran <span class="text-gray-400 font-light">Studio</span>
+    <nav class="fixed w-full z-50 bg-gradient-to-b from-black/90 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm">
+        <div class="cursor-pointer" onclick="switchPage('home')">
+            <img src="LOGO杰冉-09.png" alt="Jayran Studio" class="h-8 md:h-10 hover:opacity-80 transition" onerror="this.outerHTML='<span class=\'text-xl font-bold tracking-[0.2em] uppercase text-white\'>Jayran Studio</span>'">
         </div>
-        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-bold text-gray-300">
-            <a href="#" class="hover:text-white transition-colors">首頁 Home</a>
-            <a href="#about" class="hover:text-white transition-colors">關於我們 About</a>
-            <a href="#services" class="hover:text-white transition-colors">服務項目 Services</a>
-            <a href="#work" class="hover:text-white transition-colors">作品集 Works</a>
+        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-bold text-gray-400">
+            <button onclick="switchPage('home')" class="hover:text-white transition-colors nav-link" data-target="home">首頁 Home</button>
+            <button onclick="switchPage('about')" class="hover:text-white transition-colors nav-link" data-target="about">關於我們 About</button>
+            <button onclick="switchPage('services')" class="hover:text-white transition-colors nav-link" data-target="services">服務項目 Services</button>
+            <button onclick="switchPage('work')" class="hover:text-white transition-colors nav-link" data-target="work">作品集 Works</button>
+            <button onclick="switchPage('contact')" class="hover:text-white transition-colors nav-link" data-target="contact">聯絡我們 Contact</button>
         </div>
     </nav>
 
-    <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
-        <div class="absolute inset-0 z-[-1]">
-            <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none parallax-bg">
-                <source src="https://cdn.coverr.co/videos/coverr-a-person-typing-on-a-laptop-5183/1080p.mp4" type="video/mp4">
-            </video>
-            <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
-            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
-        </div>
+    <div id="page-home" class="view-page active">
+        <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
+            <div class="absolute inset-0 z-[-1]">
+                <video id="hero-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover opacity-40 scale-105 pointer-events-none parallax-bg">
+                    <source src="https://cdn.coverr.co/videos/coverr-a-person-typing-on-a-laptop-5183/1080p.mp4" type="video/mp4">
+                </video>
+                <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
+            </div>
+            
+            <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+                Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
+            </h1>
+            <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
+                杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
+            </p>
+
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 fade-up" style="transition-delay: 0.4s;">
+                <button onclick="switchPage('work')" class="flex flex-col items-center text-gray-500 hover:text-white transition-colors duration-300">
+                    <span class="text-xs tracking-widest uppercase mb-2">Discover</span>
+                    <div class="w-[1px] h-12 bg-gray-600 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
+                </button>
+            </div>
+        </header>
+
+        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
+                <div class="stat-box cursor-pointer group">
+                    <i class="fas fa-video text-4xl text-gray-800 group-hover:text-blue-500 transition mb-4"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="600" data-suffix="+">0+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
+                </div>
+                <div class="stat-box cursor-pointer group">
+                    <i class="fas fa-eye text-4xl text-gray-800 group-hover:text-purple-500 transition mb-4"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="2" data-suffix="M+">0M+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
+                </div>
+                <div class="stat-box cursor-pointer group">
+                    <i class="fas fa-handshake text-4xl text-gray-800 group-hover:text-amber-500 transition mb-4"></i>
+                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="150" data-suffix="+">0+</h3>
+                    <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto">
+            <div class="flex flex-col items-center mb-16 fade-up">
+                <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-4">Selected Works.</h2>
+                <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出</p>
+            </div>
+            
+            <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5"></div>
+            
+            <div class="text-center mt-16 fade-up">
+                <button onclick="switchPage('work')" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
+                    觀看所有作品 View More
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-about" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1000px] mx-auto min-h-screen">
+        <h2 class="text-4xl md:text-6xl serif-tc mb-16 text-center fade-up">About <br>Jayran Studio.</h2>
         
-        <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
-            Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
-        </h1>
-        <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
-            杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
-        </p>
-    </header>
+        <div class="mb-20 fade-up text-center max-w-3xl mx-auto space-y-6 text-gray-400 leading-relaxed tracking-wide">
+            <p>我們一直相信「尋找共識」，是邁向卓越的基礎。</p>
+            <p>杰冉影像是一間專注在「有效溝通」的內容公司，而溝通是雙向的，是互相說服的過程。希望每個與我們合作的夥伴，除了把心裡的事物傳遞出去外，也能收回寶貴的回饋，讓彼此變得更好，邁向卓越！</p>
+        </div>
 
-    <section id="about" class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
-            <div>
-                <i class="fas fa-video text-4xl text-gray-600 mb-4"></i>
-                <h3 class="text-4xl font-bold mb-2">600+</h3>
-                <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
+        <h3 class="text-2xl font-bold mb-10 text-center uppercase tracking-widest border-b border-gray-800 pb-4 fade-up">大事記 Milestones</h3>
+        <div class="border-l border-gray-800 pl-8 relative space-y-16 ml-4 md:ml-12 fade-up">
+            <div class="relative">
+                <div class="timeline-dot"></div>
+                <h4 class="text-xl font-bold text-white mb-2">2025 年 10 月</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">杰冉影像工作室正式創立，開啟高質感影音製作的新篇章。</p>
             </div>
-            <div>
-                <i class="fas fa-eye text-4xl text-gray-600 mb-4"></i>
-                <h3 class="text-4xl font-bold mb-2">2M+</h3>
-                <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
+            <div class="relative">
+                <div class="timeline-dot"></div>
+                <h4 class="text-xl font-bold text-white mb-2">2026 年初</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">承接多項大型品牌專案，包含醫敏家、小花藥師等知名圖文與影音製作，累積觀看次數突破百萬。</p>
             </div>
-            <div>
-                <i class="fas fa-handshake text-4xl text-gray-600 mb-4"></i>
-                <h3 class="text-4xl font-bold mb-2">150+</h3>
-                <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
+            </div>
+    </div>
+
+    <div id="page-services" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto min-h-screen">
+        <h2 class="text-4xl md:text-6xl serif-tc mb-16 text-center fade-up">Our <br>Services.</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center fade-up">
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-film text-5xl mb-6 text-blue-500"></i>
+                <h4 class="font-bold text-lg mb-3">影音製作</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">形象廣告、微電影、YouTube 節目企劃與高質感後製剪輯。</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-pen-nib text-5xl mb-6 text-amber-500"></i>
+                <h4 class="font-bold text-lg mb-3">2D / 3D 動畫</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">MG 動畫、角色 IP 授權、3D 建模與視覺特效合成。</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-bezier-curve text-5xl mb-6 text-purple-500"></i>
+                <h4 class="font-bold text-lg mb-3">視覺圖文設計</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">商業懶人包、社群貼文排版、品牌 CIS 識別與包裝設計。</p>
+            </div>
+            <div class="p-10 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition border border-gray-900 hover:border-gray-700">
+                <i class="fas fa-bullhorn text-5xl mb-6 text-green-500"></i>
+                <h4 class="font-bold text-lg mb-3">品牌社群行銷</h4>
+                <p class="text-xs text-gray-500 leading-relaxed">社群代操、廣告投放策略、KOL 媒合與數位行銷活動企劃。</p>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section id="services" class="py-24 px-6 md:px-12 max-w-[1400px] mx-auto fade-up">
-        <h2 class="text-center text-xs tracking-widest text-gray-500 uppercase mb-12">服務項目 Services</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-film text-3xl mb-4 text-blue-500"></i><h4 class="font-bold text-sm">影音製作</h4></div>
-            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-pen-nib text-3xl mb-4 text-amber-500"></i><h4 class="font-bold text-sm">2D / 3D 動畫</h4></div>
-            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-bezier-curve text-3xl mb-4 text-purple-500"></i><h4 class="font-bold text-sm">視覺圖文設計</h4></div>
-            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-bullhorn text-3xl mb-4 text-green-500"></i><h4 class="font-bold text-sm">品牌社群行銷</h4></div>
-        </div>
-    </section>
-
-    <section id="work" class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 fade-up">
-            <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
+    <div id="page-work" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 fade-up">
+            <h2 class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">All <br>Works.</h2>
             <div class="flex flex-col items-end gap-4">
                 <div class="flex gap-4 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light overflow-x-auto pb-2">
                     <button class="filter-btn active whitespace-nowrap" onclick="filterWorks('animation')">Animation (動畫)</button>
                     <button class="filter-btn whitespace-nowrap" onclick="filterWorks('video')">Video (影音)</button>
                     <button class="filter-btn whitespace-nowrap" onclick="filterWorks('graphic')">Graphic (圖文)</button>
                 </div>
-                <div id="dynamic-tags" class="hidden flex gap-2 flex-wrap justify-end mt-2"></div>
+                <div id="dynamic-tags" class="flex gap-2 flex-wrap justify-end mt-2"></div>
             </div>
         </div>
         
-        <div id="portfolio-grid" class="transition-all duration-500"></div>
-        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無精選作品。</div>
+        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid-all"></div>
+        <div id="empty-state-all" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">此分類目前尚無作品。</div>
+    </div>
+
+    <div id="page-contact" class="view-page pt-32 pb-24 px-6 md:px-12 max-w-[800px] mx-auto min-h-screen">
+        <h2 class="text-4xl md:text-6xl serif-tc mb-6 text-center fade-up">Contact <br>Us.</h2>
+        <p class="text-center text-gray-400 mb-12 tracking-widest fade-up">準備好開始您的專案了嗎？填寫表單與我們聯繫！</p>
         
-        <div class="text-center mt-16 fade-up">
-            <button id="btn-view-more" onclick="showAllWorks()" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
-                觀看所有作品 View More
+        <form id="contact-form" class="space-y-6 fade-up bg-[#0a0a0a] p-8 md:p-12 rounded-3xl border border-gray-900">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">您的稱呼 Name</label>
+                    <input type="text" id="contact-name" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">聯絡信箱 Email</label>
+                    <input type="email" id="contact-email-input" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-widest">專案需求 Message</label>
+                <textarea id="contact-msg" rows="4" class="w-full bg-transparent border-b border-gray-700 py-3 text-white outline-none focus:border-white transition resize-none" required></textarea>
+            </div>
+            <button type="button" onclick="sendEmail()" class="w-full bg-white text-black font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-gray-300 transition">
+                發送訊息 Send Message
             </button>
-        </div>
-    </section>
+        </form>
+    </div>
 
     <footer class="border-t border-gray-900 py-16 px-6 md:px-12 mt-10">
-        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-16">
-            <h2 id="dyn-contact-text" class="text-2xl md:text-4xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
-            <a id="dyn-contact-email" href="mailto:hello@jayran.studio" class="text-lg border-b border-white pb-1 hover:text-gray-400 hover:border-gray-400 transition-all">
-                hello@jayran.studio
-            </a>
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+            <h2 id="dyn-contact-text" class="text-2xl md:text-3xl serif-tc font-light italic text-gray-400">Ready to start <span class="text-white">your project?</span></h2>
+            
+            <div class="flex gap-4">
+                <a href="https://www.facebook.com/profile.php?id=61581644777570&locale=zh_TW" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.instagram.com/jayran.studio/" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://lin.ee/ski6rKN" target="_blank" class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition duration-300 text-lg shadow-lg">
+                    <i class="fab fa-line"></i>
+                </a>
+            </div>
         </div>
         
-        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 tracking-widest uppercase">
-            <div>&copy; 2026 JAYRAN STUDIO. All rights reserved. 
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 tracking-widest uppercase border-t border-gray-900 pt-8">
+            <div class="mb-4 md:mb-0">&copy; 2026 JAYRAN STUDIO. All rights reserved. 
                 <a href="admin.html" class="ml-2 hover:text-white transition" title="進入管理中心"><i class="fas fa-lock"></i></a>
+            </div>
+            <div>
+                Email: <a id="dyn-contact-email" href="mailto:jayran.tn@gmail.com" class="text-gray-400 hover:text-white transition">jayran.tn@gmail.com</a>
             </div>
         </div>
     </footer>
@@ -150,8 +255,6 @@
         <button onclick="closeLightbox()" class="absolute top-8 right-8 text-white text-5xl hover:text-gray-400 cursor-pointer z-50">&times;</button>
         <img id="lightbox-img" class="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-lg transform scale-95 transition-transform duration-300">
     </div>
-
-    <div class="text-center pb-4 text-[9px] text-gray-800 tracking-widest font-mono">V 3.5.0 JAYRAN CORE</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -168,6 +271,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let targetEmail = "jayran.tn@gmail.com"; 
 
         // 1. 抓取動態文字與背景圖
         onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
@@ -193,37 +297,64 @@
                     }
                 }
                 if(data.email) {
+                    targetEmail = data.email;
                     document.getElementById('dyn-contact-email').innerText = data.email;
                     document.getElementById('dyn-contact-email').href = "mailto:" + data.email;
                 }
             }
         }, (error) => console.error(error));
 
+        // 發送表單信件邏輯
+        window.sendEmail = function() {
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email-input').value;
+            const msg = document.getElementById('contact-msg').value;
+            if(!name || !email || !msg) return alert("請完整填寫表單！");
+            
+            const subject = encodeURIComponent(`[官網諮詢] 來自 ${name} 的專案需求`);
+            const body = encodeURIComponent(`姓名：${name}\n信箱：${email}\n\n需求內容：\n${msg}`);
+            window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+        };
+
         // 2. 抓取作品集資料
         let allWorks = [];
         let currentFilter = 'animation';
-        let isShowingAll = false; 
         let currentTag = ''; 
 
         onSnapshot(collection(db, "jayran_works"), (snapshot) => {
             allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
-            renderPortfolio();
+            renderPortfolioHome();
+            renderPortfolioAll();
             const loader = document.getElementById('global-loader');
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
         }, (error) => console.error(error));
 
-        // 全螢幕 Lightbox 邏輯
+        // SPA 頁面切換邏輯
+        window.switchPage = function(pageId) {
+            document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            // 處理導航列亮起狀態
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('text-white'));
+            const activeNav = document.querySelector(`.nav-link[data-target="${pageId}"]`);
+            if(activeNav) activeNav.classList.add('text-white');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (pageId === 'work') {
+                renderPortfolioAll();
+            }
+        };
+
+        // Lightbox 邏輯
         window.openLightbox = function(url) {
             const lb = document.getElementById('lightbox');
             const img = document.getElementById('lightbox-img');
             img.src = url;
             lb.classList.remove('hidden');
             lb.style.display = 'flex';
-            setTimeout(() => {
-                lb.classList.remove('opacity-0');
-                img.classList.replace('scale-95', 'scale-100');
-            }, 10);
+            setTimeout(() => { lb.classList.remove('opacity-0'); img.classList.replace('scale-95', 'scale-100'); }, 10);
         };
         window.closeLightbox = function() {
             const lb = document.getElementById('lightbox');
@@ -233,25 +364,13 @@
             setTimeout(() => { lb.classList.add('hidden'); lb.style.display = 'none'; }, 300);
         };
 
+        // 作品篩選邏輯 (針對 Works 頁面)
         window.filterWorks = function(type) {
             currentFilter = type;
             currentTag = ''; 
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            renderPortfolio();
-        };
-
-        window.showAllWorks = function() {
-            isShowingAll = true;
-            document.getElementById('about').style.display = 'none';
-            document.getElementById('services').style.display = 'none';
-            document.getElementById('dyn-sec-title').innerHTML = "All <br>Works.";
-            
-            document.getElementById('btn-view-more').classList.add('hidden'); 
-            document.getElementById('dynamic-tags').classList.remove('hidden'); 
-            
-            window.scrollTo({ top: document.getElementById('work').offsetTop - 100, behavior: 'smooth' });
-            renderPortfolio();
+            renderPortfolioAll();
         };
 
         window.filterByTag = function(tag, btnEl) {
@@ -260,32 +379,37 @@
             document.querySelectorAll('.tag-btn').forEach(b => b.classList.replace('text-black', 'text-gray-400'));
             btnEl.classList.replace('bg-gray-800', 'bg-white');
             btnEl.classList.replace('text-gray-400', 'text-black');
-            renderPortfolio();
+            renderPortfolioAll();
         }
 
-        function renderPortfolio() {
-            const grid = document.getElementById('portfolio-grid');
-            const emptyState = document.getElementById('empty-state');
+        // 生成首頁精選 (最多 5 個)
+        function renderPortfolioHome() {
+            const grid = document.getElementById('portfolio-grid-home');
+            grid.innerHTML = '';
+            const featuredWorks = allWorks.filter(w => w.isFeatured).slice(0, 5);
+
+            featuredWorks.forEach((work) => {
+                const itemHTML = buildWorkCard(work, true);
+                grid.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        // 生成 Works 頁面 (瀑布流 + 標籤)
+        function renderPortfolioAll() {
+            const grid = document.getElementById('portfolio-grid-all');
+            const emptyState = document.getElementById('empty-state-all');
             const tagsContainer = document.getElementById('dynamic-tags');
             grid.innerHTML = '';
 
             let filteredWorks = allWorks.filter(w => w.category === currentFilter);
 
-            if (!isShowingAll) {
-                filteredWorks = filteredWorks.filter(w => w.isFeatured).slice(0, 5);
-                grid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 space-y-0"; 
+            // 生成標籤按鈕
+            const uniqueTags = [...new Set(allWorks.filter(w => w.category === currentFilter && w.tags).map(w => w.tags.split(',')).flat().map(t => t.trim()))];
+            if (uniqueTags.length > 0) {
+                tagsContainer.innerHTML = `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === '' ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('', this)">全部</button>` + 
+                    uniqueTags.map(t => `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === t ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('${t}', this)">#${t}</button>`).join('');
             } else {
-                grid.className = "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8";
-            }
-
-            if (isShowingAll) {
-                const uniqueTags = [...new Set(allWorks.filter(w => w.category === currentFilter && w.tags).map(w => w.tags.split(',')).flat().map(t => t.trim()))];
-                if (uniqueTags.length > 0) {
-                    tagsContainer.innerHTML = `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === '' ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('', this)">全部</button>` + 
-                        uniqueTags.map(t => `<button class="tag-btn px-4 py-1.5 rounded-full text-[10px] font-bold transition-colors ${currentTag === t ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" onclick="filterByTag('${t}', this)">#${t}</button>`).join('');
-                } else {
-                    tagsContainer.innerHTML = '';
-                }
+                tagsContainer.innerHTML = '';
             }
 
             if (currentTag) {
@@ -294,54 +418,97 @@
 
             if (filteredWorks.length === 0) { emptyState.classList.remove('hidden'); } else { emptyState.classList.add('hidden'); }
 
-            filteredWorks.forEach((work, index) => {
-                let categoryLabel = 'Graphic Design';
-                if(work.category === 'video') categoryLabel = 'Video Production';
-                if(work.category === 'animation') categoryLabel = 'Animation';
-
-                const isVideo = work.category === 'video' || work.category === 'animation';
-                let mediaHTML = '';
-                let clickAction = '';
-                
-                if (isVideo && work.youtubeId) {
-                    const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
-                    const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
-                    clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
-                    
-                    mediaHTML = `
-                        <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none">
-                            <iframe class="w-full h-full transform scale-[1.05]" 
-                                    src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
-                                    frameborder="0" allow="autoplay; encrypted-media">
-                            </iframe>
-                        </div>`;
-                } else {
-                    clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
-                    mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${!isShowingAll ? 'aspect-square' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
-                }
-
-                let tagsHTML = '';
-                if(work.tags && isShowingAll) {
-                    tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-white/20 text-white px-2 py-0.5 rounded text-[8px] mr-1 mt-2">#${t.trim()}</span>`).join('');
-                }
-
-                const itemHTML = `
-                    <div class="portfolio-item break-inside-avoid rounded-xl mb-0 fade-up in-view relative group cursor-pointer shadow-lg" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
-                        ${mediaHTML}
-                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
-                            <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
-                            <h3 class="text-base md:text-xl serif-tc text-white font-bold leading-tight drop-shadow-md">${work.title}</h3>
-                            <div>${tagsHTML}</div>
-                        </div>
-                    </div>
-                `;
+            filteredWorks.forEach((work) => {
+                const itemHTML = buildWorkCard(work, false);
                 grid.insertAdjacentHTML('beforeend', itemHTML);
             });
         }
 
-        // 滑鼠滾動視差與游標動畫
+        // 共用卡片生成邏輯
+        function buildWorkCard(work, isHome) {
+            let categoryLabel = 'Graphic Design';
+            if(work.category === 'video') categoryLabel = 'Video Production';
+            if(work.category === 'animation') categoryLabel = 'Animation';
+
+            const isVideo = work.category === 'video' || work.category === 'animation';
+            let mediaHTML = '';
+            let clickAction = '';
+            let videoClass = isVideo ? 'is-video' : ''; // 供游標追蹤辨識
+            
+            if (isVideo && work.youtubeId) {
+                const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
+                const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
+                clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
+                
+                mediaHTML = `
+                    <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none">
+                        <iframe class="w-full h-full transform scale-[1.05]" 
+                                src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
+                                frameborder="0" allow="autoplay; encrypted-media">
+                        </iframe>
+                    </div>`;
+            } else {
+                clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
+                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-square' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+            }
+
+            let tagsHTML = '';
+            if(work.tags) {
+                tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-white/20 text-white px-2 py-0.5 rounded text-[8px] mr-1 mt-2">#${t.trim()}</span>`).join('');
+            }
+
+            return `
+                <div class="portfolio-item break-inside-avoid rounded-xl ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                    ${mediaHTML}
+                    <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
+                        <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
+                        <h3 class="text-base md:text-xl serif-tc text-white font-bold leading-tight drop-shadow-md">${work.title}</h3>
+                        <div>${tagsHTML}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Odometer 數字拉霸動畫
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const suffix = obj.dataset.suffix || '';
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start) + suffix;
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.querySelectorAll('.stat-box').forEach(box => {
+            box.addEventListener('mouseenter', function() {
+                const target = this.querySelector('.stat-num');
+                const endVal = parseInt(target.dataset.val);
+                animateValue(target, 0, endVal, 1000);
+            });
+        });
+
+        // 游標特效 (遇到影片顯示 "點擊前往 YouTube")
         const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+        const cursorText = document.getElementById('cursor-text');
+        
+        document.addEventListener('mousemove', (e) => { 
+            cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; 
+            
+            const videoItem = e.target.closest('.is-video');
+            if (videoItem) {
+                cursorText.style.left = (e.clientX + 15) + 'px';
+                cursorText.style.top = (e.clientY + 15) + 'px';
+                cursorText.classList.remove('hidden');
+                cursorText.classList.remove('opacity-0');
+            } else {
+                cursorText.classList.add('opacity-0');
+                setTimeout(() => cursorText.classList.add('hidden'), 200);
+            }
+        });
+
         document.addEventListener('mouseover', (e) => {
             if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item')) { cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; cursor.style.backgroundColor = 'rgba(255,255,255,0.1)'; } 
             else { cursor.style.transform = 'translate(-50%, -50%) scale(1)'; cursor.style.backgroundColor = 'transparent'; }
@@ -349,13 +516,15 @@
         
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
-            const parallaxBg = document.querySelector('.parallax-bg');
-            if(parallaxBg) parallaxBg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`;
+            const parallaxBg = document.querySelectorAll('.parallax-bg');
+            parallaxBg.forEach(bg => {
+                if(bg) bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`;
+            });
         });
 
         const observer = new IntersectionObserver((entries, obs) => { entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } }); }, { threshold: 0.1 });
         const observeElements = () => { document.querySelectorAll('.fade-up:not(.in-view)').forEach(el => observer.observe(el)); };
-        new MutationObserver(observeElements).observe(document.getElementById('portfolio-grid'), { childList: true });
+        new MutationObserver(observeElements).observe(document.body, { childList: true, subtree: true });
         setTimeout(observeElements, 500);
     </script>
 </body>
