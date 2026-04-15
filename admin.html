@@ -492,11 +492,12 @@
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).checked = true;
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).dispatchEvent(new Event('change'));
 
-            if (work.category === 'video' || work.category === 'animation') {
+           if (work.category === 'video' || work.category === 'animation') {
                 document.getElementById('w-youtube').value = work.youtubeUrl || work.link || '';
                 document.getElementById('w-youtube').dispatchEvent(new Event('input'));
             } else {
-                if(work.imageUrl && work.imageUrl.startsWith('data:image')) {
+                // 【修復：移除 startsWith 限制，無論是舊網址還是本機壓縮圖，都能正確預覽與儲存】
+                if(work.imageUrl) {
                     document.getElementById('w-img-base64').value = work.imageUrl;
                     document.getElementById('w-img-preview').src = work.imageUrl;
                     document.getElementById('w-img-preview').classList.remove('hidden');
