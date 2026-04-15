@@ -192,20 +192,33 @@
                 if(work.category === 'animation') categoryLabel = 'Animation';
 
                 const clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
-
-                // 強制把 YouTube 舊的黑邊縮圖(hqdefault)轉換成滿版無邊框的(maxresdefault)
-                let finalImgUrl = work.imageUrl;
-                if (finalImgUrl && finalImgUrl.includes('hqdefault.jpg')) {
-                    finalImgUrl = finalImgUrl.replace('hqdefault.jpg', 'maxresdefault.jpg');
+                const isVideo = work.category === 'video' || work.category === 'animation';
+                
+                let mediaHTML = '';
+                
+                if (isVideo && work.youtubeId) {
+                    // 【終極修復：自動判斷是否為 Shorts (9:16) 還是一般影片 (16:9)，完美去除黑邊，並恢復無聲自動輪播！】
+                    const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
+                    const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
+                    
+                    mediaHTML = `
+                        <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none">
+                            <iframe class="w-full h-full transform scale-[1.05]" 
+                                    src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
+                                    frameborder="0" allow="autoplay; encrypted-media">
+                            </iframe>
+                        </div>`;
+                } else {
+                    // 圖文保留原比例，絕無黑邊
+                    mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
                 }
 
-                // 使用 break-inside-avoid 配合瀑布流，h-auto 自動展現原圖最美比例
                 const itemHTML = `
-                    <div class="portfolio-item break-inside-avoid rounded-xl mb-6 md:mb-8 fade-up in-view" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
-                        <img src="${finalImgUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">
-                        <div class="portfolio-overlay rounded-xl">
+                    <div class="portfolio-item break-inside-avoid rounded-xl mb-6 md:mb-8 fade-up in-view relative group cursor-pointer" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                        ${mediaHTML}
+                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
                             <p class="text-[10px] tracking-widest text-gray-300 mb-1 uppercase">${categoryLabel}</p>
-                            <h3 class="text-xl md:text-2xl serif-tc">${work.title}</h3>
+                            <h3 class="text-xl md:text-2xl serif-tc text-white font-bold">${work.title}</h3>
                         </div>
                     </div>
                 `;
