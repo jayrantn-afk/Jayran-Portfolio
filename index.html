@@ -110,7 +110,7 @@
                 <p class="text-sm tracking-widest text-gray-500 uppercase">首頁精選展出</p>
             </div>
             
-            <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 w-full"></div>
+            <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 w-full items-start"></div>
             
             <div class="text-center mt-16 fade-up">
                 <button onclick="switchPage('work')" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
@@ -182,7 +182,7 @@
             </div>
         </div>
         
-        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid-all"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 items-start" id="portfolio-grid-all"></div>
         <div id="empty-state-all" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">此分類目前尚無作品。</div>
     </div>
 
@@ -405,7 +405,7 @@
             renderPortfolioAll();
         }, (error) => console.error(error));
 
-        // SPA 頁面切換
+        // SPA 頁面切換邏輯
         window.switchPage = function(pageId) {
             document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
             const targetPage = document.getElementById('page-' + pageId);
@@ -494,7 +494,7 @@
             });
         }
 
-        // 共用卡片生成邏輯 (影片虛化背景防黑邊)
+        // 共用卡片生成邏輯 (影片虛化背景防黑邊完美回歸)
         function buildWorkCard(work, isHome) {
             let categoryLabel = 'Graphic Design';
             if(work.category === 'video') categoryLabel = 'Video Production';
@@ -506,21 +506,25 @@
             let videoClass = isVideo ? 'is-video' : ''; 
             
             if (isVideo && work.youtubeId) {
+                // 完美判斷直式短影音與橫式影片
+                const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
+                const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
                 clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
                 
+                // 利用 YouTube 縮圖當作背景虛化，解決播放器黑底問題
                 const blurBgUrl = `https://img.youtube.com/vi/${work.youtubeId}/hqdefault.jpg`;
                 
                 mediaHTML = `
-                    <div class="w-full ${isHome ? 'aspect-[3/4]' : 'aspect-video'} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center">
-                        <div class="absolute inset-0 bg-cover bg-center opacity-50 blur-2xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
-                        <iframe class="relative z-10 w-full h-full" 
+                    <div class="w-full ${aspectClass} relative rounded-xl overflow-hidden bg-black pointer-events-none flex items-center justify-center">
+                        <div class="absolute inset-0 bg-cover bg-center opacity-50 blur-xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
+                        <iframe class="relative z-10 w-full h-full transform scale-[1.02]" 
                                 src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
                                 frameborder="0" allow="autoplay; encrypted-media">
                         </iframe>
                     </div>`;
             } else {
                 clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
-                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-[3/4]' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
             }
 
             let tagsHTML = '';
@@ -529,7 +533,7 @@
             }
 
             return `
-                <div class="portfolio-item rounded-xl ${isHome ? 'w-full mb-0' : 'break-inside-avoid mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                <div class="portfolio-item rounded-xl w-full break-inside-avoid ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
                     ${mediaHTML}
                     <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
                         <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
@@ -554,7 +558,7 @@
                     return;
                 }
 
-                // 元素進入螢幕後，根據滾動進度計算數值
+                // 元素進入螢幕後，根據滾動進度計算數值 (越往下滾，數字越大)
                 let progress = (windowHeight - rect.top) / (windowHeight * 0.6); 
                 progress = Math.max(0, Math.min(1, progress));
                 
@@ -588,7 +592,8 @@
 
         document.addEventListener('mouseover', (e) => {
             if(!cursor) return;
-            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item') || e.target.closest('.stat-box')) { 
+            // 移除了 .stat-box 的判斷，滑鼠碰到數字不再會有點擊的游標特效
+            if (e.target.closest('a') || e.target.closest('button') || e.target.closest('.portfolio-item')) { 
                 cursor.style.transform = 'translate(-50%, -50%) scale(1.5)'; 
                 cursor.style.backgroundColor = 'rgba(255,255,255,0.1)'; 
             } else { 
