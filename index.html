@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- 引入高質感字體 -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;500;700;900&display=swap" rel="stylesheet">
@@ -53,20 +54,24 @@
     </div>
 
     <!-- 導航列 -->
-    <nav class="fixed w-full z-50 mix-blend-difference px-6 py-8 md:px-12 flex justify-between items-center">
-        <div class="text-xl md:text-2xl font-bold tracking-[0.2em] uppercase cursor-pointer" onclick="window.scrollTo(0,0)">
+ <nav class="fixed w-full z-50 bg-gradient-to-b from-black/80 to-transparent px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-sm">
+        <div class="text-xl md:text-2xl font-bold tracking-[0.2em] uppercase cursor-pointer text-white hover:text-gray-300 transition" onclick="window.scrollTo(0,0)">
             Jayran <span class="text-gray-400 font-light">Studio</span>
         </div>
-        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-light">
-            <a href="#work" class="hover:text-gray-400 transition-colors">Works</a>
+        <div class="hidden md:flex gap-8 text-sm tracking-widest uppercase font-bold text-gray-300">
+            <a href="#" class="hover:text-white transition-colors">首頁 Home</a>
+            <a href="#about" class="hover:text-white transition-colors">關於我們 About</a>
+            <a href="#services" class="hover:text-white transition-colors">服務項目 Services</a>
+            <a href="#work" class="hover:text-white transition-colors">作品集 Works</a>
         </div>
     </nav>
 
-    <!-- 首頁視覺 -->
-    <header class="relative h-screen flex flex-col justify-center items-center text-center px-4">
+    <header class="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden">
         <div class="absolute inset-0 z-[-1]">
-            <img id="hero-bg-img" src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-30 transition-all duration-1000">
-            <div class="absolute inset-0 hero-gradient"></div>
+            <video autoplay loop muted playsinline class="w-full h-full object-cover opacity-50 scale-105 pointer-events-none">
+                <source src="https://cdn.coverr.co/videos/coverr-a-person-typing-on-a-laptop-5183/1080p.mp4" type="video/mp4">
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
         </div>
         
         <h1 id="dyn-h1" class="fade-up text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
@@ -75,30 +80,60 @@
         <p id="dyn-sub" class="fade-up text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4" style="transition-delay: 0.2s;">
             杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
         </p>
-
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 fade-up" style="transition-delay: 0.4s;">
-            <a href="#work" class="flex flex-col items-center text-gray-500 hover:text-white transition-colors duration-300">
-                <span class="text-xs tracking-widest uppercase mb-2">Scroll</span>
-                <div class="w-[1px] h-12 bg-gray-600 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
-            </a>
-        </div>
     </header>
 
+    <section id="about" class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
+            <div>
+                <i class="fas fa-video text-4xl text-gray-600 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">600+</h3>
+                <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
+            </div>
+            <div>
+                <i class="fas fa-eye text-4xl text-gray-600 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">2M+</h3>
+                <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
+            </div>
+            <div>
+                <i class="fas fa-handshake text-4xl text-gray-600 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">150+</h3>
+                <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="py-24 px-6 md:px-12 max-w-[1400px] mx-auto fade-up">
+        <h2 class="text-center text-xs tracking-widest text-gray-500 uppercase mb-12">服務項目 Services</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-film text-3xl mb-4 text-blue-500"></i><h4 class="font-bold text-sm">影音製作</h4></div>
+            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-pen-nib text-3xl mb-4 text-amber-500"></i><h4 class="font-bold text-sm">2D / 3D 動畫</h4></div>
+            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-bezier-curve text-3xl mb-4 text-purple-500"></i><h4 class="font-bold text-sm">視覺圖文設計</h4></div>
+            <div class="p-6 bg-[#0a0a0a] rounded-2xl hover:bg-[#111] transition"><i class="fas fa-bullhorn text-3xl mb-4 text-green-500"></i><h4 class="font-bold text-sm">品牌社群行銷</h4></div>
+        </div>
+    </section>
+
     <!-- 作品區 -->
-    <section id="work" class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+ <section id="work" class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
         <div class="flex flex-col md:flex-row justify-between items-end mb-12 fade-up">
             <h2 id="dyn-sec-title" class="text-4xl md:text-6xl serif-tc mb-8 md:mb-0">Selected <br>Works.</h2>
-            <div class="flex gap-4 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light overflow-x-auto pb-2">
-                <button class="filter-btn active whitespace-nowrap" onclick="filterWorks('all')">All</button>
-                <button class="filter-btn whitespace-nowrap" onclick="filterWorks('animation')">Animation (動畫)</button>
-                <button class="filter-btn whitespace-nowrap" onclick="filterWorks('video')">Video (影音)</button>
-                <button class="filter-btn whitespace-nowrap" onclick="filterWorks('graphic')">Graphic (圖文)</button>
+            <div class="flex flex-col items-end gap-4">
+                <div class="flex gap-4 md:gap-8 text-xs md:text-sm tracking-widest uppercase font-light overflow-x-auto pb-2">
+                    <button class="filter-btn active whitespace-nowrap" onclick="filterWorks('animation')">Animation (動畫)</button>
+                    <button class="filter-btn whitespace-nowrap" onclick="filterWorks('video')">Video (影音)</button>
+                    <button class="filter-btn whitespace-nowrap" onclick="filterWorks('graphic')">Graphic (圖文)</button>
+                </div>
+                <div id="dynamic-tags" class="hidden flex gap-2 flex-wrap justify-end mt-2"></div>
             </div>
         </div>
         
-        <!-- 更新為「瀑布流 (Masonry)」網格：保留圖片完美原始比例，不會變形或黑邊 -->
-        <div class="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 md:gap-5 space-y-3 md:space-y-5" id="portfolio-grid"></div>
-        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無作品展示。</div>
+        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 md:gap-8 space-y-6 md:space-y-8" id="portfolio-grid"></div>
+        <div id="empty-state" class="hidden text-center py-20 text-gray-600 tracking-widest uppercase fade-up">目前尚無精選作品。</div>
+        
+        <div class="text-center mt-16 fade-up">
+            <button id="btn-view-more" onclick="showAllWorks()" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
+                觀看所有作品 View More
+            </button>
+        </div>
     </section>
 
     <!-- 頁尾 -->
@@ -159,31 +194,74 @@
         }, (error) => console.error(error));
 
         // 2. 抓取作品集資料
+  // 2. 抓取作品集資料
         let allWorks = [];
-        let currentFilter = 'all';
+        let currentFilter = 'animation'; // 預設顯示動畫
+        let isShowingAll = false; // 預設只顯示精選
+        let currentTag = ''; // 目前選擇的標籤
 
         onSnapshot(collection(db, "jayran_works"), (snapshot) => {
             allWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             allWorks.sort((a, b) => (a.order || 999) - (b.order || 999));
             renderPortfolio();
-
             const loader = document.getElementById('global-loader');
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 700); }
         }, (error) => console.error(error));
 
         window.filterWorks = function(type) {
             currentFilter = type;
+            currentTag = ''; // 切換大分類時清空標籤
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
             renderPortfolio();
         };
 
-    function renderPortfolio() {
+        window.showAllWorks = function() {
+            isShowingAll = true;
+            document.getElementById('btn-view-more').classList.add('hidden'); // 隱藏按鈕
+            document.getElementById('dynamic-tags').classList.remove('hidden'); // 顯示標籤列
+            renderPortfolio();
+        };
+
+        window.filterByTag = function(tag, btnEl) {
+            currentTag = tag;
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.replace('bg-white', 'bg-gray-800'));
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.replace('text-black', 'text-gray-400'));
+            btnEl.classList.replace('bg-gray-800', 'bg-white');
+            btnEl.classList.replace('text-gray-400', 'text-black');
+            renderPortfolio();
+        }
+
+        function renderPortfolio() {
             const grid = document.getElementById('portfolio-grid');
             const emptyState = document.getElementById('empty-state');
+            const tagsContainer = document.getElementById('dynamic-tags');
             grid.innerHTML = '';
 
-            const filteredWorks = currentFilter === 'all' ? allWorks : allWorks.filter(w => w.category === currentFilter);
+            // 1. 先過濾大分類
+            let filteredWorks = allWorks.filter(w => w.category === currentFilter);
+
+            // 2. 如果還沒點擊「看更多」，只顯示有打勾「精選」的
+            if (!isShowingAll) {
+                filteredWorks = filteredWorks.filter(w => w.isFeatured);
+            }
+
+            // 3. 提取該分類下所有的標籤 (供看更多使用)
+            if (isShowingAll) {
+                const uniqueTags = [...new Set(allWorks.filter(w => w.category === currentFilter && w.tags).map(w => w.tags.split(',')).flat().map(t => t.trim()))];
+                if (uniqueTags.length > 0) {
+                    tagsContainer.innerHTML = `<button class="tag-btn px-4 py-1 rounded-full text-[10px] font-bold ${currentTag === '' ? 'bg-white text-black' : 'bg-gray-800 text-gray-400'}" onclick="filterByTag('', this)">全部標籤</button>` + 
+                        uniqueTags.map(t => `<button class="tag-btn px-4 py-1 rounded-full text-[10px] font-bold ${currentTag === t ? 'bg-white text-black' : 'bg-gray-800 text-gray-400'}" onclick="filterByTag('${t}', this)">#${t}</button>`).join('');
+                } else {
+                    tagsContainer.innerHTML = '';
+                }
+            }
+
+            // 4. 如果有選標籤，再過濾標籤
+            if (currentTag) {
+                filteredWorks = filteredWorks.filter(w => w.tags && w.tags.includes(currentTag));
+            }
+
             if (filteredWorks.length === 0) { emptyState.classList.remove('hidden'); } else { emptyState.classList.add('hidden'); }
 
             filteredWorks.forEach((work, index) => {
@@ -197,7 +275,6 @@
                 let mediaHTML = '';
                 
                 if (isVideo && work.youtubeId) {
-                    // 自動判斷是否為 Shorts (9:16) 還是一般影片 (16:9)，完美去除黑邊，並恢復無聲自動輪播！
                     const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
                     const aspectClass = isShorts ? 'aspect-[9/16]' : 'aspect-video';
                     
@@ -209,17 +286,22 @@
                             </iframe>
                         </div>`;
                 } else {
-                    // 圖文保留原比例
                     mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full h-auto object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
                 }
 
-                // 標題字體與間距縮小 (text-base / p-4)，完美適應精緻小網格
+                // 標籤徽章 (前台顯示)
+                let tagsHTML = '';
+                if(work.tags) {
+                    tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-white/20 text-white px-2 py-0.5 rounded text-[8px] mr-1 mt-2">#${t.trim()}</span>`).join('');
+                }
+
                 const itemHTML = `
-                    <div class="portfolio-item break-inside-avoid rounded-xl mb-3 md:mb-5 fade-up in-view relative group cursor-pointer" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                    <div class="portfolio-item break-inside-avoid rounded-xl mb-6 md:mb-8 fade-up in-view relative group cursor-pointer" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
                         ${mediaHTML}
-                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
-                            <p class="text-[9px] tracking-widest text-gray-300 mb-1 uppercase">${categoryLabel}</p>
-                            <h3 class="text-base md:text-lg serif-tc text-white font-bold leading-tight">${work.title}</h3>
+                        <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+                            <p class="text-[10px] tracking-widest text-gray-300 mb-1 uppercase">${categoryLabel}</p>
+                            <h3 class="text-xl md:text-2xl serif-tc text-white font-bold leading-tight">${work.title}</h3>
+                            <div>${tagsHTML}</div>
                         </div>
                     </div>
                 `;
