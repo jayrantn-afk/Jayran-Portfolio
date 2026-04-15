@@ -260,6 +260,7 @@
         let editingWorkId = null;
         let isHeroBgCleared = false; 
 
+        // 圖片壓縮
         async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -300,7 +301,7 @@
             document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
             document.getElementById('set-hero-bg-input').value = '';
             isHeroBgCleared = true;
-            alert("已預計移除背景圖片。請點擊最下方的「儲存設定」來生效，前台將恢復播放本機影片。");
+            alert("已預計移除背景圖片。點擊「儲存設定」生效。");
         };
 
         document.getElementById('w-img-input').addEventListener('change', async (e) => {
@@ -385,11 +386,11 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "jayran_works"));
                 allWorks = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // 100% 確保抓取資料時修正 undefined bug
+                // 核心修復：正確處理 0 排序
                 allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
                 renderList();
             } catch (error) {
-                alert("⛔ 讀取作品失敗！請確認 Firestore 權限。");
+                alert("⛔ 讀取作品失敗！");
             }
         }
 
@@ -447,7 +448,6 @@
                     const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
                     if (docSnap.exists() && docSnap.data().heroBg) data.heroBg = docSnap.data().heroBg;
                 }
-
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
                 isHeroBgCleared = false; 
                 alert("✅ 網站設定已更新！");
@@ -472,7 +472,7 @@
             if(!work) return;
             if(!work.isFeatured) {
                 const featuredCount = allWorks.filter(w => w.isFeatured).length;
-                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！請先取消其他的。");
+                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！");
             }
             showLoader("更新狀態...");
             await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
@@ -486,14 +486,13 @@
             
             let filtered;
             if (currentView === 'featured') {
-                // 修復 0 = 999 排序 Bug
                 filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999));
             } else {
                 filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
             }
 
             if (filtered.length === 0) { 
-                container.innerHTML = `<div class="col-span-full py-10 text-center text-gray-400 font-bold">${currentView === 'featured' ? '請先到各分類勾選首頁精選' : '目前無作品，請從左側新增。'}</div>`; 
+                container.innerHTML = `<div class="col-span-full py-10 text-center text-gray-400 font-bold">${currentView === 'featured' ? '請先到各分類勾選首頁精選' : '目前無作品。'}</div>`; 
                 return; 
             }
 
@@ -512,8 +511,8 @@
                 else if (finalImgUrl) thumbHTML = `<img src="${finalImgUrl}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">`;
                 else thumbHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400"><i class="fas fa-image text-2xl"></i></div>`;
 
-                const featuredBtnClass = work.isFeatured ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : 'bg-white text-gray-300 hover:text-green-500';
-                const tagBadge = work.tags ? `<span class="absolute top-2 right-2 bg-white/95 backdrop-blur text-gray-800 text-[9px] font-black px-2.5 py-1 rounded-full shadow-sm border border-gray-100 z-10">${work.tags}</span>` : '';
+                const featuredBtnClass = work.isFeatured ? 'bg-green-500 text-white shadow-lg' : 'bg-white text-gray-300 hover:text-green-500';
+                const tagBadge = work.tags ? `<span class="absolute top-2 right-2 bg-white text-gray-800 text-[9px] font-black px-2 py-1 rounded-full shadow-sm z-10">${work.tags}</span>` : '';
 
                 const el = document.createElement('div');
                 el.className = "bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group relative";
@@ -524,20 +523,20 @@
                         ${thumbHTML}
                         ${tagBadge}
                         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 z-20">
-                            <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition z-50" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
-                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition z-50" title="刪除"><i class="fas fa-trash text-sm"></i></div>
+                            <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-blue-600 transition z-50" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
+                            <div onclick="event.stopPropagation(); deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-red-600 transition z-50" title="刪除"><i class="fas fa-trash text-sm"></i></div>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}" title="切換首頁精選">
+                        <button onclick="event.stopPropagation(); toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}">
                             <i class="fas fa-check text-xs"></i>
                         </button>
                     </div>
                     <div class="p-2">
                         <div class="flex items-center gap-1 mb-1">
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${badge.bg} ${badge.text} uppercase tracking-wider">${badge.label}</span>
-                            <span class="text-[10px] text-gray-400 font-mono">#${index + 1}</span>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${badge.bg} ${badge.text}">${badge.label}</span>
+                            <span class="text-[10px] text-gray-400">#${index + 1}</span>
                         </div>
-                        <h3 class="font-bold text-gray-800 text-xs truncate" title="${work.title}">${work.title}</h3>
+                        <h3 class="font-bold text-gray-800 text-xs truncate">${work.title}</h3>
                     </div>
                 `;
                 container.appendChild(el);
@@ -563,35 +562,32 @@
             });
             try { 
                 await batch.commit(); 
+                // 核心修復：儲存後的再次排序，必須檢查 undefined
                 if (currentView === 'featured') {
                     allWorks.sort((a, b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)); 
                 } else {
                     allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999)); 
                 }
                 btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; 
-                renderList(); 
-            } 
-            catch (error) { alert("排序儲存失敗！"); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; } 
+                renderList();
+            } catch (error) { alert("排序儲存失敗！"); } 
             finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); }
         });
 
         window.editWork = function(id) {
             const work = allWorks.find(w => w.id === id);
             if (!work) return;
-            
             editingWorkId = id;
             document.getElementById('form-header').innerText = "編輯作品";
             document.getElementById('edit-badge').classList.remove('hidden');
             document.getElementById('btn-submit').innerText = "儲存修改";
             document.getElementById('btn-submit').classList.replace('bg-gray-900', 'bg-blue-600');
             document.getElementById('btn-cancel').classList.remove('hidden');
-
             document.getElementById('w-title').value = work.title;
             document.getElementById('w-tags').value = work.tags || '';
             document.getElementById('w-featured').checked = !!work.isFeatured;
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).checked = true;
             document.querySelector(`input[name="w-cat"][value="${work.category}"]`).dispatchEvent(new Event('change'));
-
             if (work.category === 'video' || work.category === 'animation') {
                 document.getElementById('w-youtube').value = work.youtubeUrl || work.link || '';
                 document.getElementById('w-youtube').dispatchEvent(new Event('input'));
@@ -613,7 +609,6 @@
             document.getElementById('btn-submit').innerText = "確認發佈";
             document.getElementById('btn-submit').classList.replace('bg-blue-600', 'bg-gray-900');
             document.getElementById('btn-cancel').classList.add('hidden');
-            
             document.getElementById('w-title').value = '';
             document.getElementById('w-tags').value = '';
             document.getElementById('w-featured').checked = false;
@@ -635,7 +630,7 @@
                 await deleteDoc(doc(db, "jayran_works", id));
                 allWorks = allWorks.filter(w => w.id !== id);
                 renderList();
-            } catch (error) { alert("刪除失敗！權限不足。"); }
+            } catch (error) { alert("刪除失敗！"); }
             finally { hideLoader(); }
         };
 
@@ -643,20 +638,17 @@
             const title = document.getElementById('w-title').value.trim();
             const category = document.querySelector('input[name="w-cat"]:checked').value;
             const isVideo = category === 'animation' || category === 'video';
-
             if (!title) return alert("請輸入標題");
-
             let docData = { 
                 title: title, 
                 category: category,
                 tags: document.getElementById('w-tags').value.trim(),
                 isFeatured: document.getElementById('w-featured').checked
             };
-
             if (isVideo) {
                 const ytUrl = document.getElementById('w-youtube').value.trim();
                 const ytId = extractYouTubeId(ytUrl);
-                if (!ytUrl || !ytId) return alert("請貼上有效的 YouTube 連結");
+                if (!ytUrl || !ytId) return alert("請貼上 YouTube 連結");
                 docData.youtubeUrl = ytUrl;
                 docData.youtubeId = ytId;
                 docData.imageUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
@@ -667,11 +659,9 @@
                 if (b64) docData.imageUrl = b64;
                 docData.link = document.getElementById('w-img-link').value.trim();
             }
-
             showLoader("寫入資料中...");
             const submitBtn = document.getElementById('btn-submit');
             submitBtn.disabled = true;
-
             try {
                 if (editingWorkId) {
                     await updateDoc(doc(db, "jayran_works", editingWorkId), docData);
@@ -683,7 +673,6 @@
                     const catWorks = allWorks.filter(w => w.category === category);
                     const maxOrder = catWorks.length > 0 ? Math.max(...catWorks.map(w => w.order || 0)) : -1;
                     docData.order = maxOrder + 1;
-                    
                     if (docData.isFeatured) {
                         const featuredWorks = allWorks.filter(w => w.isFeatured);
                         docData.featuredOrder = featuredWorks.length > 0 ? Math.max(...featuredWorks.map(w => w.featuredOrder || 0)) + 1 : 0;
@@ -691,19 +680,11 @@
                     const docRef = await addDoc(collection(db, "jayran_works"), docData);
                     allWorks.push({ id: docRef.id, ...docData });
                 }
-
                 cancelEdit(); 
-                const tabBtn = document.querySelector(`.tab-btn[onclick*="'${currentView === 'featured' ? 'featured' : category}'"]`);
-                if (tabBtn) tabBtn.click();
-                else { currentView = category; renderList(); }
-
-            } catch (error) {
-                console.error("Upload Error:", error);
-                alert("⛔ 發佈/更新失敗！這通常是因為圖片太大超過限制。請重新上傳或選小一點的圖片。");
-            } finally {
-                hideLoader();
-                submitBtn.disabled = false;
-            }
+                if (currentView === 'featured') switchView('featured', document.querySelector('[onclick*="featured"]'));
+                else switchView(category, document.querySelector(`[onclick*="'${category}'"]`));
+            } catch (error) { alert("⛔ 發佈失敗！圖片過大。"); } 
+            finally { hideLoader(); submitBtn.disabled = false; }
         });
 
         function showLoader(text) { document.getElementById('loader-text').innerText = text; document.getElementById('loader').style.display = 'flex'; }
