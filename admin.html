@@ -200,11 +200,17 @@
                             </div>
                         </div>
 
+                        <div class="bg-purple-50 p-6 rounded-xl border border-purple-100">
+                            <h3 class="font-bold text-purple-800 mb-4"><i class="fas fa-tags mr-2 text-purple-500"></i>全站標籤庫設定</h3>
+                            <label class="block text-xs font-bold text-purple-600 mb-1">請輸入標籤名稱 (請用半形逗號 , 分隔)</label>
+                            <input id="set-global-tags" class="w-full bg-white border border-purple-200 p-3 rounded-lg text-sm font-bold outline-none focus:border-purple-500 transition" placeholder="例如: 小花藥師, 醫敏家, 品牌形象">
+                            <p class="text-xs text-purple-500 mt-2 font-bold">※ 設定後，新增作品時即可從下拉選單選擇。</p>
+                        </div>
+
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-list mr-2 text-gray-500"></i>作品區標題</h3>
                             <input id="set-sec-title" class="w-full border p-3 rounded-lg font-bold" placeholder="Selected<br>Works.">
                         </div>
-
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-envelope mr-2 text-gray-500"></i>頁尾聯絡資訊</h3>
                             <div class="grid grid-cols-2 gap-4">
@@ -376,16 +382,33 @@
             }
         }
 
-       async function fetchSettings() {
+     async function fetchSettings() {
             const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                // 恢復最穩定的獨立讀取寫法，保證資料不遺失
                 if(data.h1) document.getElementById('set-h1').value = data.h1;
                 if(data.h2) document.getElementById('set-h2').value = data.h2;
                 if(data.sub) document.getElementById('set-sub').value = data.sub;
                 if(data.secTitle) document.getElementById('set-sec-title').value = data.secTitle;
                 if(data.contactText) document.getElementById('set-contact-text').value = data.contactText;
-                if(data.email) document.getElementById('set-contact-email').value = data.email; // 精準修復信箱讀取
+                if(data.email) document.getElementById('set-contact-email').value = data.email;
+                if(data.globalTags) {
+                    document.getElementById('set-global-tags').value = data.globalTags;
+                    updateTagSelect(data.globalTags);
+                }
+            }
+        }
+
+        function updateTagSelect(tagsString) {
+            const select = document.getElementById('w-tags');
+            if(!select) return;
+            select.innerHTML = '<option value="">無標籤</option>';
+            if(tagsString) {
+                tagsString.split(',').forEach(t => {
+                    const tag = t.trim();
+                    if(tag) select.innerHTML += `<option value="${tag}">${tag}</option>`;
+                });
             }
         }
 
@@ -397,8 +420,10 @@
             const data = {
                 h1: document.getElementById('set-h1').value, h2: document.getElementById('set-h2').value,
                 sub: document.getElementById('set-sub').value, secTitle: document.getElementById('set-sec-title').value,
-                contactText: document.getElementById('set-contact-text').value, email: document.getElementById('set-contact-email').value
+                contactText: document.getElementById('set-contact-text').value, email: document.getElementById('set-contact-email').value,
+                globalTags: document.getElementById('set-global-tags').value
             };
+            updateTagSelect(data.globalTags);
 
             try {
                 const bgBase64 = document.getElementById('set-hero-bg-base64').value;
@@ -413,11 +438,10 @@
                 }
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
                 alert("✅ 網站設定已更新！");
-            } catch (error) { alert("⛔ 儲存失敗！圖片可能過大，請選擇更小的圖片。"); } 
+            } catch (error) { alert("⛔ 儲存失敗！"); } 
             finally { hideLoader(); saveBtn.disabled = false; }
         });
 
-        // ============ 介面與渲染 ============
         window.switchView = function (type, btnEl) {
             currentView = type;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800");
@@ -428,6 +452,21 @@
             } else {
                 document.getElementById('view-settings').classList.add('hidden'); document.getElementById('view-works').classList.remove('hidden'); renderList();
             }
+        };
+
+        // 打勾防呆機制 (最多 5 個)
+        window.toggleFeatured = async function(id) {
+            const work = allWorks.find(w => w.id === id);
+            if(!work) return;
+            if(!work.isFeatured) {
+                const featuredCount = allWorks.filter(w => w.isFeatured && w.category === work.category).length;
+                if(featuredCount >= 5) return alert("⚠️ 此分類的「首頁精選」最多只能設定 5 個！請先取消其他的。");
+            }
+            showLoader("更新狀態...");
+            await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
+            work.isFeatured = !work.isFeatured;
+            renderList();
+            hideLoader();
         };
 
         function renderList() {
@@ -450,18 +489,25 @@
                 else if (finalImgUrl) thumbHTML = `<img src="${finalImgUrl}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">`;
                 else thumbHTML = `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400"><i class="fas fa-image text-2xl"></i></div>`;
 
+                const featuredBtnClass = work.isFeatured ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : 'bg-white text-gray-300 hover:text-green-500';
+                const tagBadge = work.tags ? `<span class="absolute top-2 right-2 bg-white/95 backdrop-blur text-gray-800 text-[9px] font-black px-2.5 py-1 rounded-full shadow-sm border border-gray-100 z-10">${work.tags}</span>` : '';
+
                 const el = document.createElement('div');
                 el.className = "bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group relative";
                 el.setAttribute('data-id', work.id);
                 
                 el.innerHTML = `
-                    <div class="h-24 relative">
+                    <div class="h-28 relative">
                         ${thumbHTML}
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                        ${tagBadge}
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 z-20">
                             <div class="drag-handle bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition cursor-grab"><i class="fas fa-bars text-sm"></i></div>
                             <div onclick="editWork('${work.id}')" class="cursor-pointer bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition" title="編輯"><i class="fas fa-pencil-alt text-sm"></i></div>
                             <div onclick="deleteWork('${work.id}')" class="cursor-pointer bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition" title="刪除"><i class="fas fa-trash text-sm"></i></div>
                         </div>
+                        <button onclick="toggleFeatured('${work.id}')" class="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-30 ${featuredBtnClass}" title="切換首頁精選">
+                            <i class="fas fa-check text-xs"></i>
+                        </button>
                     </div>
                     <div class="p-2">
                         <div class="flex items-center gap-1 mb-1">
