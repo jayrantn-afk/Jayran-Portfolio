@@ -385,6 +385,7 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "jayran_works"));
                 allWorks = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                // 100% 確保抓取資料時修正 undefined bug
                 allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
                 renderList();
             } catch (error) {
@@ -485,6 +486,7 @@
             
             let filtered;
             if (currentView === 'featured') {
+                // 修復 0 = 999 排序 Bug
                 filtered = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999));
             } else {
                 filtered = allWorks.filter(w => w.category === currentView).sort((a,b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
