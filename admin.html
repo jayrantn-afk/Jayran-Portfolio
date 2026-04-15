@@ -567,9 +567,10 @@
                     allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999)); 
                 }
                 btn.innerHTML = '<i class="fas fa-check mr-2"></i>已儲存'; 
+                renderList(); 
             } 
             catch (error) { alert("排序儲存失敗！"); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; } 
-            finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); renderList(); }
+            finally { setTimeout(() => { btn.classList.add('hidden'); btn.innerHTML = '<i class="fas fa-save mr-2"></i>儲存排序'; btn.disabled = false; }, 2000); }
         });
 
         window.editWork = function(id) {
