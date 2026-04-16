@@ -39,6 +39,27 @@
         
         .timeline-dot { position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #050505; }
 
+        /* 🌟 CTA 按鈕呼吸光暈 — 讓客戶一眼看見入口 */
+        @keyframes breathe-glow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255,255,255,0.25), 0 0 30px rgba(255,255,255,0.05);
+                border-color: rgba(156, 163, 175, 0.45);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 0 12px rgba(255,255,255,0), 0 0 55px rgba(255,255,255,0.22);
+                border-color: rgba(255,255,255,0.95);
+                transform: scale(1.025);
+            }
+        }
+        .breathe-btn {
+            animation: breathe-glow 3s ease-in-out infinite;
+            will-change: transform, box-shadow;
+        }
+        .breathe-btn:hover {
+            animation-play-state: paused;
+        }
+
         /* 滾動雲朵特效容器 */
         #home-scroll-container { height: 250vh; position: relative; background-color: #050505; }
         #hero-sticky-view { position: sticky; top: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #050505; }
@@ -48,6 +69,25 @@
         .real-cloud-img { height: 150%; width: auto; max-width: none; object-fit: cover; opacity: 0.9; filter: drop-shadow(0px 20px 30px rgba(0,0,0,0.5)); }
         #eng-title-group { position: absolute; z-index: 10; text-align: center; width: 100%; }
         #chi-title-group { position: absolute; z-index: 30; text-align: center; width: 100%; opacity: 0; transform: translateY(30px); }
+
+        /* 🌫 統計區雲霧背景 — 延續 hero 氛圍 */
+        .stats-cloud-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .stats-cloud-bg img {
+            position: absolute;
+            height: 130%;
+            top: -15%;
+            width: auto;
+            max-width: none;
+            opacity: 0.22;
+            filter: blur(0.5px);
+        }
+        .stats-cloud-bg .cloud-l { left: -15%; }
+        .stats-cloud-bg .cloud-r { right: -15%; transform: scaleX(-1); }
     </style>
 </head>
 <body class="antialiased selection:bg-gray-700 selection:text-white">
@@ -100,13 +140,15 @@
                     <img src="雲2.png" alt="" class="real-cloud-img scale-90" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
+                <!-- 🌟 去除外層黑色 drop-shadow，內容往上一點 -->
                 <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[30] w-full px-4">
-                    <div class="flex flex-col items-center justify-center drop-shadow-[0_15px_25px_rgba(0,0,0,0.95)] mt-10">
-                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto filter drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mb-10" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                    <div class="flex flex-col items-center justify-center -mt-6">
+                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto mb-10" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white mb-10\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
                         
-                        <h2 class="text-3xl md:text-[42px] font-light tracking-[0.6em] text-white/90 mb-8 ml-[0.6em] serif-tc drop-shadow-lg">冉冉升起</h2>
+                        <h2 class="text-3xl md:text-[42px] font-light tracking-[0.6em] text-white mb-8 ml-[0.6em] serif-tc" style="text-shadow: 0 2px 15px rgba(0,0,0,0.8);">冉冉升起</h2>
                         
-                        <p class="text-[11px] md:text-sm tracking-[0.4em] text-gray-300/80 max-w-2xl leading-[2.5] font-light text-center drop-shadow-md uppercase">
+                        <!-- 🌟 副標改亮白 + 文字陰影，強化可讀性 -->
+                        <p class="text-[11px] md:text-sm tracking-[0.4em] text-white/90 max-w-2xl leading-[2.5] font-light text-center uppercase" style="text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6);">
                             專注於極致的光影雕琢與品牌故事淬鍊<br>
                             為每一件作品鑄就無法取代的視覺張力
                         </p>
@@ -120,7 +162,8 @@
                     <img src="雲4.png" alt="" class="real-cloud-img scale-110" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div class="absolute -bottom-2 left-0 w-full h-[40vh] bg-gradient-to-t from-[#050505] via-[#050505] to-transparent z-[45] pointer-events-none"></div>
+                <!-- 🌟 底部遮罩縮短 40vh → 20vh，不再吃掉副標 -->
+                <div class="absolute -bottom-2 left-0 w-full h-[20vh] bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent z-[45] pointer-events-none"></div>
 
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-[50] pointer-events-none">
                     <div class="flex flex-col items-center text-white">
@@ -131,22 +174,31 @@
             </div>
         </div>
 
-        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10 bg-[#050505]">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
-                <div class="stat-box cursor-default group">
-                    <i class="fas fa-video text-4xl text-gray-600 mb-4 transition group-hover:text-blue-500"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="100" data-suffix="+">0+</h3>
-                    <p class="text-xs tracking-widest text-gray-500 uppercase">歷年影音作品</p>
-                </div>
-                <div class="stat-box cursor-default group">
-                    <i class="fas fa-eye text-4xl text-gray-600 mb-4 transition group-hover:text-purple-500"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="2500" data-suffix="K+">0K+</h3>
-                    <p class="text-xs tracking-widest text-gray-500 uppercase">全網觀看流量</p>
-                </div>
-                <div class="stat-box cursor-default group">
-                    <i class="fas fa-handshake text-4xl text-gray-600 mb-4 transition group-hover:text-amber-500"></i>
-                    <h3 class="text-4xl font-bold mb-2 stat-num" data-val="5" data-suffix="+">0+</h3>
-                    <p class="text-xs tracking-widest text-gray-500 uppercase">企業品牌合作</p>
+        <!-- 🌟 統計區：雲朵氛圍延伸 + 文字變亮 -->
+        <section class="relative overflow-hidden bg-[#050505]">
+            <div class="stats-cloud-bg">
+                <img src="雲3.png" class="cloud-l" alt="" onerror="this.style.display='none'">
+                <img src="雲4.png" class="cloud-r" alt="" onerror="this.style.display='none'">
+                <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#050505] to-transparent"></div>
+                <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#050505] to-transparent"></div>
+            </div>
+            <div class="py-28 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
+                    <div class="stat-box cursor-default group">
+                        <i class="fas fa-video text-4xl text-white/80 mb-4 transition-all duration-500 group-hover:text-blue-400 group-hover:scale-110"></i>
+                        <h3 class="text-5xl font-bold mb-3 stat-num text-white" data-val="100" data-suffix="+" style="text-shadow: 0 2px 20px rgba(255,255,255,0.15);">0+</h3>
+                        <p class="text-xs tracking-[0.3em] text-gray-200 uppercase font-semibold">歷年影音作品</p>
+                    </div>
+                    <div class="stat-box cursor-default group">
+                        <i class="fas fa-eye text-4xl text-white/80 mb-4 transition-all duration-500 group-hover:text-purple-400 group-hover:scale-110"></i>
+                        <h3 class="text-5xl font-bold mb-3 stat-num text-white" data-val="2500" data-suffix="K+" style="text-shadow: 0 2px 20px rgba(255,255,255,0.15);">0K+</h3>
+                        <p class="text-xs tracking-[0.3em] text-gray-200 uppercase font-semibold">全網觀看流量</p>
+                    </div>
+                    <div class="stat-box cursor-default group">
+                        <i class="fas fa-handshake text-4xl text-white/80 mb-4 transition-all duration-500 group-hover:text-amber-400 group-hover:scale-110"></i>
+                        <h3 class="text-5xl font-bold mb-3 stat-num text-white" data-val="5" data-suffix="+" style="text-shadow: 0 2px 20px rgba(255,255,255,0.15);">0+</h3>
+                        <p class="text-xs tracking-[0.3em] text-gray-200 uppercase font-semibold">企業品牌合作</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -159,8 +211,9 @@
             
             <div id="portfolio-grid-home" class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 w-full items-start"></div>
             
+            <!-- 🌟 觀看所有作品按鈕加上呼吸光暈 -->
             <div class="text-center mt-16 fade-up">
-                <button onclick="switchPage('work')" class="px-10 py-4 border border-gray-600 rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition duration-300">
+                <button onclick="switchPage('work')" class="breathe-btn px-12 py-4 border rounded-full text-xs tracking-widest uppercase hover:bg-white hover:text-black transition-colors duration-300 font-bold">
                     觀看所有作品 View More
                 </button>
             </div>
@@ -691,4 +744,3 @@
     </script>
 </body>
 </html>
-
