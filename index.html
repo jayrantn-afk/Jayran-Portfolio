@@ -124,10 +124,10 @@
         
         <div id="home-scroll-container">
             <div id="hero-sticky-view">
-                <div class="absolute inset-0 z-0">
-                    <img id="hero-bg-img" src="山1.png" class="w-full h-full object-cover opacity-30 parallax-bg" onerror="this.style.display='none';">
-                    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-[#050505]"></div>
-                </div>
+              <div class="absolute inset-0 z-0">
+            <img id="hero-bg-img" src="山1.png" class="w-full h-full object-cover opacity-80 parallax-bg" onerror="this.style.display='none';">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-[#050505]"></div>
+            </div>
                 
                 <div id="eng-title-group" class="flex flex-col items-center justify-center h-full drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
                     <h1 id="dyn-h1" class="text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight text-white">
@@ -145,18 +145,34 @@
                     <img src="雲2.png" alt="" class="real-cloud-img scale-90" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[30] w-full px-4">
-                    <div class="flex flex-col items-center justify-center -mt-6">
-                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto mb-10" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white mb-10\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
-                        
-                        <h2 class="text-4xl md:text-[52px] font-light tracking-[0.6em] text-white mb-8 ml-[0.6em] serif-tc" style="text-shadow: 0 2px 15px rgba(0,0,0,0.8);">冉冉升起</h2>
-                        
-                        <p class="text-sm md:text-lg tracking-[0.4em] text-white/90 max-w-3xl leading-[2.5] font-light text-center uppercase" style="text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.6);">
-                            專注於極致的光影雕琢與品牌故事淬鍊<br>
-                            為每一件作品鑄就無法取代的視覺張力
-                        </p>
-                    </div>
-                </div>
+             <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[30] w-full px-4 absolute inset-0">
+    <div class="flex flex-col items-center justify-center mt-12">
+        <img src="杰冉字體.png" alt="杰冉" class="max-h-32 md:max-h-48 w-auto mb-8 drop-shadow-2xl" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white mb-8\'>杰冉</h1>'">
+        
+        <div class="flex flex-col items-center mb-10">
+            <h2 class="text-xl md:text-2xl font-light tracking-[1em] text-white mb-5 ml-[1em] serif-tc uppercase" style="text-shadow: 0 4px 20px rgba(0,0,0,1);">冉冉升起</h2>
+            <div class="w-12 h-[1px] bg-white/40 mb-5"></div>
+            <p class="text-[10px] md:text-xs tracking-[0.5em] text-gray-300 max-w-2xl leading-[2.2] font-light text-center" style="text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+                專注於極致的光影雕琢與品牌故事淬鍊<br>為每一件作品鑄就無法取代的視覺張力
+            </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 md:gap-16 text-center w-full max-w-3xl px-4">
+            <div class="stat-box">
+                <h3 class="text-3xl md:text-5xl font-black mb-2 stat-num text-white drop-shadow-lg" data-val="100" data-suffix="+">0+</h3>
+                <p class="text-[9px] md:text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">歷年影音作品</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="text-3xl md:text-5xl font-black mb-2 stat-num text-white drop-shadow-lg" data-val="2500" data-suffix="K+">0K+</h3>
+                <p class="text-[9px] md:text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">全網觀看流量</p>
+            </div>
+            <div class="stat-box">
+                <h3 class="text-3xl md:text-5xl font-black mb-2 stat-num text-white drop-shadow-lg" data-val="5" data-suffix="+">0+</h3>
+                <p class="text-[9px] md:text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">企業品牌合作</p>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div id="cloud-left-front" class="cloud-layer z-[25]">
                     <img src="雲3.png" alt="" class="real-cloud-img scale-110" style="object-position: left center;" onerror="this.style.display='none';">
@@ -176,32 +192,7 @@
             </div>
         </div>
 
-        <section class="relative overflow-hidden bg-gradient-to-b from-[#e0e0e0] via-[#a3a3a3] to-[#050505] z-20 pb-24 pt-32 -mt-20">
-            <div class="stats-cloud-bg">
-                <img src="雲3.png" class="cloud-l" alt="" onerror="this.style.display='none'">
-                <img src="雲4.png" class="cloud-r" alt="" onerror="this.style.display='none'">
-            </div>
-            
-            <div class="py-12 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
-                    <div class="stat-box cursor-default group">
-                        <i class="fas fa-video text-4xl text-black/80 mb-4 transition-all duration-500 group-hover:text-blue-700 group-hover:scale-110"></i>
-                        <h3 class="text-5xl font-black mb-3 stat-num text-black" data-val="46" data-suffix="+" style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">0+</h3>
-                        <p class="text-sm tracking-[0.3em] text-gray-800 uppercase font-bold">歷年影音作品</p>
-                    </div>
-                    <div class="stat-box cursor-default group">
-                        <i class="fas fa-eye text-4xl text-black/80 mb-4 transition-all duration-500 group-hover:text-purple-700 group-hover:scale-110"></i>
-                        <h3 class="text-5xl font-black mb-3 stat-num text-black" data-val="1171" data-suffix="K+" style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">0K+</h3>
-                        <p class="text-sm tracking-[0.3em] text-gray-800 uppercase font-bold">全網觀看流量</p>
-                    </div>
-                    <div class="stat-box cursor-default group">
-                        <i class="fas fa-handshake text-4xl text-black/80 mb-4 transition-all duration-500 group-hover:text-amber-700 group-hover:scale-110"></i>
-                        <h3 class="text-5xl font-black mb-3 stat-num text-black" data-val="2" data-suffix="+" style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">0+</h3>
-                        <p class="text-sm tracking-[0.3em] text-gray-800 uppercase font-bold">企業品牌合作</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <section class="py-24 md:py-32 px-6 md:px-12 max-w-[1600px] mx-auto overflow-hidden relative z-10 bg-[#050505]">
             <div class="flex flex-col items-center mb-16 fade-up">
@@ -675,25 +666,27 @@
                 let progress = scrollY / maxScroll;
                 progress = Math.max(0, Math.min(1, progress));
 
-                const translateXFront = (1 - progress) * 100;
-                const translateXBack = (1 - progress) * 60;
+              // 將雲朵起始位置推得更遠 (150 & 100)，讓山脈一開始完全透出
+const translateXFront = (1 - progress) * 150;
+const translateXBack = (1 - progress) * 100;
 
-                if(cloudLeftFront) cloudLeftFront.style.transform = `translateX(-${translateXFront}%)`;
-                if(cloudRightFront) cloudRightFront.style.transform = `translateX(${translateXFront}%)`;
-                if(cloudLeftBack) cloudLeftBack.style.transform = `translateX(-${translateXBack}%)`;
-                if(cloudRightBack) cloudRightBack.style.transform = `translateX(${translateXBack}%)`;
+if(cloudLeftFront) cloudLeftFront.style.transform = `translateX(-${translateXFront}%)`;
+if(cloudRightFront) cloudRightFront.style.transform = `translateX(${translateXFront}%)`;
+if(cloudLeftBack) cloudLeftBack.style.transform = `translateX(-${translateXBack}%)`;
+if(cloudRightBack) cloudRightBack.style.transform = `translateX(${translateXBack}%)`;
 
-                let engOpacity = 1 - (progress * 2);
-                engOpacity = Math.max(0, engOpacity);
-                if(engGroup) engGroup.style.opacity = engOpacity;
+let engOpacity = 1 - (progress * 2);
+engOpacity = Math.max(0, engOpacity);
+if(engGroup) engGroup.style.opacity = engOpacity;
 
-                let chiProgress = (progress - 0.4) / 0.6;
-                chiProgress = Math.max(0, Math.min(1, chiProgress));
-                if(chiGroup) {
-                    chiGroup.style.opacity = chiProgress;
-                    const chiY = 30 - (chiProgress * 30);
-                    chiGroup.style.transform = `translateY(${chiY}px)`;
-                }
+let chiProgress = (progress - 0.4) / 0.6;
+chiProgress = Math.max(0, Math.min(1, chiProgress));
+if(chiGroup) {
+    chiGroup.style.opacity = chiProgress;
+    // 強化「冉冉升起」的上升動態，從下方 120px 慢慢升到 0px 停住
+    const chiY = 120 - (chiProgress * 120);
+    chiGroup.style.transform = `translateY(${chiY}px)`;
+}
             }
         }
         
