@@ -35,6 +35,11 @@
         <div id="loader-text" class="text-lg font-bold text-gray-700 tracking-widest">資料處理中...</div>
     </div>
 
+    <!-- 🌟 版本編號：固定卡死在畫面右下角，不會被捲動或內容擠走 -->
+    <button onclick="openVersionModal()" class="fixed bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 text-[10px] text-gray-500 hover:text-blue-600 hover:border-blue-300 tracking-widest font-mono font-bold z-50 transition cursor-pointer flex items-center gap-1.5">
+        V 4.0.1 JAYRAN CORE <i class="fas fa-info-circle text-xs"></i>
+    </button>
+
     <div class="flex h-full">
         <aside class="w-96 bg-white shadow-2xl flex flex-col z-10">
             <div class="p-6 bg-gray-900 text-white flex justify-between items-center">
@@ -140,10 +145,6 @@
         </aside>
 
         <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col relative">
-            
-            <button onclick="openVersionModal()" class="absolute bottom-4 right-4 text-[10px] text-gray-400 hover:text-blue-600 tracking-widest font-mono font-bold z-50 transition cursor-pointer flex items-center gap-1">
-                V 4.0.0 JAYRAN CORE <i class="fas fa-info-circle text-xs"></i>
-            </button>
 
             <div class="flex gap-4 mb-6 border-b border-gray-200 pb-2 flex-wrap">
                 <button class="tab-btn font-bold text-amber-600 border-b-2 border-amber-500 px-3 pb-2 text-lg" onclick="switchView('animation', this)">動畫專案</button>
@@ -260,7 +261,17 @@
             <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 text-sm text-gray-600 leading-relaxed">
                 
                 <div class="border-b pb-4">
-                    <h3 class="font-bold text-gray-800 text-base mb-1">V 4.0.0 <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded ml-2 font-bold">最新</span></h3>
+                    <h3 class="font-bold text-gray-800 text-base mb-1">V 4.0.1 <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded ml-2 font-bold">最新</span></h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><b>優化：</b>前台首頁視覺全面升級：杰冉字體移除厚重黑色陰影、副標加強可讀性。</li>
+                        <li><b>新增：</b>首頁統計數據區融入雲朵氛圍背景，視覺過渡更流暢。</li>
+                        <li><b>新增：</b>「觀看所有作品」CTA 按鈕加入呼吸光暈動畫，引導客戶進一步探索。</li>
+                        <li><b>修復：</b>後台版本號按鈕改為固定浮動，不受捲動影響。</li>
+                    </ul>
+                </div>
+
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-gray-800 text-base mb-1">V 4.0.0</h3>
                     <ul class="list-disc pl-5 space-y-1 mt-2">
                         <li><b>新增：</b>後台可動態編輯「關於我們：大事記」功能。</li>
                         <li><b>優化：</b>首頁背景大圖與雲朵特效結合，導入「羽化漸層遮罩」平滑轉場。</li>
@@ -458,7 +469,6 @@
             }
         }
 
-        // 🌟 匠人升級：大事記介面動態新增邏輯
         window.addMilestoneRow = function(date = '', desc = '') {
             const container = document.getElementById('milestone-container');
             const row = document.createElement('div');
@@ -488,7 +498,6 @@
                     updateTagSelect(data.globalTags);
                 }
                 
-                // 載入大事記資料
                 const msContainer = document.getElementById('milestone-container');
                 msContainer.innerHTML = '';
                 if(data.milestones && data.milestones.length > 0) {
@@ -503,7 +512,6 @@
             showLoader("儲存設定中...");
             const saveBtn = document.getElementById('btn-save-settings-db'); saveBtn.disabled = true;
             
-            // 🌟 匠人升級：蒐集動態大事記資料
             const milestones = [];
             document.querySelectorAll('#milestone-container > div').forEach(row => {
                 const date = row.querySelector('.ms-date').value.trim();
