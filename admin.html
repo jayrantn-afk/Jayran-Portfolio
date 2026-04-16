@@ -140,7 +140,11 @@
         </aside>
 
         <main class="flex-1 bg-gray-100 p-8 overflow-y-auto flex flex-col relative">
-            <div class="absolute bottom-4 right-4 text-[9px] text-gray-400 tracking-widest font-mono font-bold z-50">V 3.5.0 JAYRAN CORE</div>
+            
+            <button onclick="openVersionModal()" class="absolute bottom-4 right-4 text-[10px] text-gray-400 hover:text-blue-600 tracking-widest font-mono font-bold z-50 transition cursor-pointer flex items-center gap-1">
+                V 3.6.0 JAYRAN CORE <i class="fas fa-info-circle text-xs"></i>
+            </button>
+
             <div class="flex gap-4 mb-6 border-b border-gray-200 pb-2 flex-wrap">
                 <button class="tab-btn font-bold text-amber-600 border-b-2 border-amber-500 px-3 pb-2 text-lg" onclick="switchView('animation', this)">動畫專案</button>
                 <button class="tab-btn font-bold text-gray-500 px-3 pb-2 text-lg hover:text-gray-800" onclick="switchView('video', this)">影音專案</button>
@@ -238,6 +242,41 @@
         </main>
     </div>
 
+    <div id="version-modal" class="fixed inset-0 bg-black/60 z-[99999] hidden flex-col justify-center items-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
+            <button onclick="closeVersionModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition text-xl"><i class="fas fa-times"></i></button>
+            <h2 class="text-2xl font-black mb-6 flex items-center gap-2"><i class="fas fa-rocket text-blue-600"></i> 系統更新日誌</h2>
+            
+            <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 text-sm text-gray-600 leading-relaxed">
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-gray-800 text-base mb-1">V 3.6.0 <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded ml-2 font-bold">最新</span></h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><b>修復：</b>長條影片(Shorts)縮圖左右黑邊問題，全面套用虛化背景。</li>
+                        <li><b>優化：</b>作品集排版恢復為「大尺寸 (一排四個)」，提升視覺張力。</li>
+                        <li><b>新增：</b>首頁滾輪連動「雲朵遮擋與標題切換」特效。</li>
+                        <li><b>新增：</b>後台版本更新日誌查看功能。</li>
+                        <li><b>修復：</b>首頁精選排序拖曳，0 序號誤判 Bug 根除。</li>
+                    </ul>
+                </div>
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-gray-800 text-base mb-1">V 3.5.0</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><b>新增：</b>全站標籤庫系統 (可自定義下拉選單)。</li>
+                        <li><b>優化：</b>前台聯絡表單升級為無跳轉 AJAX 直發系統。</li>
+                        <li><b>調整：</b>滾動拉霸數字不再因游標滑過而誤觸重播。</li>
+                    </ul>
+                </div>
+                <div class="pb-2">
+                    <h3 class="font-bold text-gray-800 text-base mb-1">V 3.0.0</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li><b>升級：</b>全站導入 SPA (單頁應用程式) 架構，切換頁面無需重新載入。</li>
+                        <li><b>升級：</b>全面翻新 UI / UX 視覺動態設計。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -260,7 +299,9 @@
         let editingWorkId = null;
         let isHeroBgCleared = false; 
 
-        // 圖片壓縮
+        window.openVersionModal = () => { document.getElementById('version-modal').style.display = 'flex'; };
+        window.closeVersionModal = () => { document.getElementById('version-modal').style.display = 'none'; };
+
         async function compressImage(file, mw = 1000, mh = 1000, q = 0.65) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -386,7 +427,7 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "jayran_works"));
                 allWorks = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                // 核心修復：正確處理 0 排序
+                // 完美修復 undefined 排序 Bug
                 allWorks.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999));
                 renderList();
             } catch (error) {
@@ -562,7 +603,6 @@
             });
             try { 
                 await batch.commit(); 
-                // 核心修復：儲存後的再次排序，必須檢查 undefined
                 if (currentView === 'featured') {
                     allWorks.sort((a, b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)); 
                 } else {
