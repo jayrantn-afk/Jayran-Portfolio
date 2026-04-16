@@ -111,7 +111,9 @@
                     <img src="雲4.png" alt="" class="real-cloud-img scale-110" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-40 pointer-events-none">
+                <div class="absolute bottom-0 left-0 w-full h-48 md:h-64 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent z-[45] pointer-events-none"></div>
+
+                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-[50] pointer-events-none">
                     <div class="flex flex-col items-center text-white">
                         <span class="text-[10px] tracking-[0.3em] uppercase mb-2">Scroll</span>
                         <div class="w-[1px] h-8 bg-white/30 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
@@ -120,7 +122,7 @@
             </div>
         </div>
 
-        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto border-b border-gray-900 relative z-10 bg-[#050505]">
+        <section class="py-20 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10 bg-[#050505]">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center fade-up">
                 <div class="stat-box cursor-default group">
                     <i class="fas fa-video text-4xl text-gray-600 mb-4 transition group-hover:text-blue-500"></i>
@@ -165,17 +167,8 @@
         </div>
 
         <h3 class="text-2xl font-bold mb-10 text-center uppercase tracking-widest border-b border-gray-800 pb-4 fade-up">大事記 Milestones</h3>
-        <div class="border-l border-gray-800 pl-8 relative space-y-16 ml-4 md:ml-12 fade-up">
-            <div class="relative">
-                <div class="timeline-dot"></div>
-                <h4 class="text-xl font-bold text-white mb-2">2025 年 10 月</h4>
-                <p class="text-sm text-gray-400 leading-relaxed">杰冉影像工作室正式創立，開啟高質感影音製作的新篇章。</p>
-            </div>
-            <div class="relative">
-                <div class="timeline-dot"></div>
-                <h4 class="text-xl font-bold text-white mb-2">2026 年初</h4>
-                <p class="text-sm text-gray-400 leading-relaxed">承接多項大型品牌專案，包含醫敏家、小花藥師等知名圖文與影音製作，累積觀看次數突破百萬。</p>
-            </div>
+        <div id="dyn-milestones" class="border-l border-gray-800 pl-8 relative space-y-16 ml-4 md:ml-12 fade-up">
+            <div class="text-center text-gray-500 py-10">資料載入中...</div>
         </div>
     </div>
 
@@ -380,6 +373,20 @@
                     const pageEmail = document.getElementById('dyn-contact-email-page');
                     if(pageEmail) { pageEmail.innerText = data.email; pageEmail.href = "mailto:" + data.email; }
                 }
+
+                // 🌟 匠人升級：動態接收後台設定的大事記資料
+                const msContainer = document.getElementById('dyn-milestones');
+                if(data.milestones && data.milestones.length > 0) {
+                    msContainer.innerHTML = data.milestones.map(m => `
+                        <div class="relative fade-up in-view">
+                            <div class="timeline-dot"></div>
+                            <h4 class="text-xl font-bold text-white mb-2">${m.date}</h4>
+                            <p class="text-sm text-gray-400 leading-relaxed">${m.desc.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    msContainer.innerHTML = `<div class="text-gray-500 py-10">（即將公開更多里程碑）</div>`;
+                }
             }
         }, (error) => console.error(error));
 
@@ -492,7 +499,6 @@
         function renderPortfolioHome() {
             const grid = document.getElementById('portfolio-grid-home');
             grid.innerHTML = '';
-            // 嚴格確保只擷取前 5 筆
             const featuredWorks = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)).slice(0, 5);
 
             featuredWorks.forEach((work) => {
@@ -529,7 +535,6 @@
             });
         }
 
-        // 核心修改區塊：防遮蓋的全新無邊框排版
         function buildWorkCard(work, isHome) {
             let categoryLabel = 'Graphic Design';
             if(work.category === 'video') categoryLabel = 'Video Production';
@@ -586,7 +591,6 @@
             `;
         }
 
-        // 雲朵特效與數字滾動運算核心
         const scrollContainer = document.getElementById('home-scroll-container');
         const engGroup = document.getElementById('eng-title-group');
         const chiGroup = document.getElementById('chi-title-group');
@@ -619,7 +623,6 @@
                 let progress = scrollY / maxScroll;
                 progress = Math.max(0, Math.min(1, progress));
 
-                // 前後景視差滾動
                 const translateXFront = (1 - progress) * 100;
                 const translateXBack = (1 - progress) * 60;
 
