@@ -40,8 +40,8 @@
         .timeline-dot { position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #050505; }
 
         /* 滾動雲朵特效容器 */
-        #home-scroll-container { height: 250vh; position: relative; }
-        #hero-sticky-view { position: sticky; top: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #home-scroll-container { height: 250vh; position: relative; background-color: #050505; }
+        #hero-sticky-view { position: sticky; top: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #050505; }
         .cloud-layer { position: absolute; top: 0; height: 100vh; width: 60vw; z-index: 20; pointer-events: none; display: flex; align-items: center; }
         #cloud-left-back, #cloud-left-front { left: 0; transform: translateX(-100%); justify-content: flex-start; }
         #cloud-right-back, #cloud-right-front { right: 0; transform: translateX(100%); justify-content: flex-end; }
@@ -81,14 +81,14 @@
                         <source src="0_Sky_Contrast_1920x1080.mp4" type="video/mp4">
                     </video>
                     <img id="hero-bg-img" class="hidden w-full h-full object-cover opacity-30 parallax-bg">
-                    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-[#050505]"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-[#050505]"></div>
                 </div>
                 
-                <div id="eng-title-group" class="flex flex-col items-center justify-center h-full">
-                    <h1 id="dyn-h1" class="text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight">
+                <div id="eng-title-group" class="flex flex-col items-center justify-center h-full drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
+                    <h1 id="dyn-h1" class="text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter mb-6 serif-tc leading-tight text-white">
                         Crafting Visual <br> <span class="italic font-light text-gray-300">Masterpieces.</span>
                     </h1>
-                    <p id="dyn-sub" class="text-sm md:text-lg tracking-[0.3em] text-gray-400 uppercase max-w-2xl mt-4">
+                    <p id="dyn-sub" class="text-sm md:text-lg tracking-[0.3em] text-gray-200 uppercase max-w-2xl mt-4 font-bold drop-shadow-md">
                         杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計
                     </p>
                 </div>
@@ -100,8 +100,17 @@
                     <img src="雲2.png" alt="" class="real-cloud-img scale-90" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[20]">
-                    <img src="杰冉字體.png" alt="杰冉" class="max-h-40 w-auto filter drop-shadow-2xl" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[30] w-full px-4">
+                    <div class="flex flex-col items-center justify-center drop-shadow-[0_15px_25px_rgba(0,0,0,0.95)]">
+                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-8" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                        
+                        <h2 class="text-2xl md:text-4xl font-black tracking-[0.8em] text-white mb-6 ml-[0.4em] serif-tc">冉冉升起</h2>
+                        
+                        <p class="text-xs md:text-[15px] tracking-[0.2em] md:tracking-[0.3em] text-gray-200 max-w-3xl leading-relaxed md:leading-[2.5] font-medium text-center bg-black/30 px-6 py-4 rounded-2xl backdrop-blur-sm border border-white/5">
+                            專注於極致的光影雕琢與品牌故事淬鍊<br>
+                            為每一件作品鑄就無法取代的視覺張力
+                        </p>
+                    </div>
                 </div>
 
                 <div id="cloud-left-front" class="cloud-layer z-[25]">
@@ -111,11 +120,11 @@
                     <img src="雲4.png" alt="" class="real-cloud-img scale-110" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div class="absolute bottom-0 left-0 w-full h-48 md:h-64 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent z-[45] pointer-events-none"></div>
+                <div class="absolute -bottom-2 left-0 w-full h-[40vh] bg-gradient-to-t from-[#050505] via-[#050505] to-transparent z-[45] pointer-events-none"></div>
 
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-[50] pointer-events-none">
                     <div class="flex flex-col items-center text-white">
-                        <span class="text-[10px] tracking-[0.3em] uppercase mb-2">Scroll</span>
+                        <span class="text-[10px] tracking-[0.3em] uppercase mb-2 drop-shadow-md">Scroll</span>
                         <div class="w-[1px] h-8 bg-white/30 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-white transform -translate-y-full animate-[scrollDown_2s_infinite]"></div></div>
                     </div>
                 </div>
@@ -374,7 +383,7 @@
                     if(pageEmail) { pageEmail.innerText = data.email; pageEmail.href = "mailto:" + data.email; }
                 }
 
-                // 🌟 匠人升級：動態接收後台設定的大事記資料
+                // 大事記動態渲染
                 const msContainer = document.getElementById('dyn-milestones');
                 if(data.milestones && data.milestones.length > 0) {
                     msContainer.innerHTML = data.milestones.map(m => `
