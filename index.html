@@ -26,12 +26,8 @@
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .fade-up.in-view { opacity: 1; transform: translateY(0); }
 
-        .portfolio-item { overflow: hidden; position: relative; cursor: pointer; background-color: #111; }
-        .portfolio-img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: brightness(0.8); }
-        .portfolio-item:hover .portfolio-img { transform: scale(1.05); filter: brightness(1); }
-        .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; }
-        .portfolio-item:hover .portfolio-overlay { opacity: 1; }
-
+        .portfolio-item { position: relative; cursor: pointer; background-color: transparent; }
+        
         .filter-btn { position: relative; color: var(--text-muted); transition: color 0.3s ease; padding-bottom: 4px; }
         .filter-btn::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--text-main); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .filter-btn:hover, .filter-btn.active { color: var(--text-main); }
@@ -47,7 +43,7 @@
         #home-scroll-container { height: 250vh; position: relative; }
         #hero-sticky-view { position: sticky; top: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .cloud-layer { position: absolute; top: 0; height: 100vh; width: 60vw; z-index: 20; pointer-events: none; display: flex; align-items: center; }
-      #cloud-left-back, #cloud-left-front { left: 0; transform: translateX(-100%); justify-content: flex-start; }
+        #cloud-left-back, #cloud-left-front { left: 0; transform: translateX(-100%); justify-content: flex-start; }
         #cloud-right-back, #cloud-right-front { right: 0; transform: translateX(100%); justify-content: flex-end; }
         .real-cloud-img { height: 150%; width: auto; max-width: none; object-fit: cover; opacity: 0.9; filter: drop-shadow(0px 20px 30px rgba(0,0,0,0.5)); }
         #eng-title-group { position: absolute; z-index: 10; text-align: center; width: 100%; }
@@ -97,7 +93,7 @@
                     </p>
                 </div>
 
-               <div id="cloud-left-back" class="cloud-layer opacity-70 z-[18]">
+                <div id="cloud-left-back" class="cloud-layer opacity-70 z-[18]">
                     <img src="雲1.png" alt="" class="real-cloud-img scale-90" style="object-position: left center;" onerror="this.style.display='none';">
                 </div>
                 <div id="cloud-right-back" class="cloud-layer opacity-70 z-[18]">
@@ -496,6 +492,7 @@
         function renderPortfolioHome() {
             const grid = document.getElementById('portfolio-grid-home');
             grid.innerHTML = '';
+            // 嚴格確保只擷取前 5 筆
             const featuredWorks = allWorks.filter(w => w.isFeatured).sort((a,b) => (a.featuredOrder !== undefined ? a.featuredOrder : 999) - (b.featuredOrder !== undefined ? b.featuredOrder : 999)).slice(0, 5);
 
             featuredWorks.forEach((work) => {
@@ -532,7 +529,7 @@
             });
         }
 
-        // 終極無黑邊卡片生成邏輯
+        // 核心修改區塊：防遮蓋的全新無邊框排版
         function buildWorkCard(work, isHome) {
             let categoryLabel = 'Graphic Design';
             if(work.category === 'video') categoryLabel = 'Video Production';
@@ -544,24 +541,15 @@
             let videoClass = isVideo ? 'is-video' : ''; 
             
             if (isVideo && work.youtubeId) {
-                // 完美判斷長直影片 (Shorts)
-                const isShorts = (work.youtubeUrl || work.link || '').includes('shorts');
-                // 控制 Iframe 自身的比例，不讓 YouTube 補黑邊
-                const iframeSizing = isShorts ? 'h-full aspect-[9/16] max-w-full' : 'w-full aspect-video max-h-full';
-                // 控制外層容器的比例
-                const containerAspect = isHome ? 'aspect-[3/4]' : (isShorts ? 'aspect-[9/16]' : 'aspect-video');
-
                 clickAction = work.link ? `onclick="window.open('${work.link}', '_blank')"` : '';
-                const blurBgUrl = `https://img.youtube.com/vi/${work.youtubeId}/hqdefault.jpg`;
-                
                 mediaHTML = `
-                    <div class="w-full ${containerAspect} relative rounded-xl overflow-hidden bg-[#050505] pointer-events-none flex items-center justify-center shadow-inner">
-                        <div class="absolute inset-0 bg-cover bg-center opacity-60 blur-2xl scale-125 z-0" style="background-image: url('${blurBgUrl}')"></div>
-                        <iframe class="relative z-10 ${iframeSizing} object-cover" 
+                    <div class="w-full aspect-[9/16] relative rounded-xl overflow-hidden bg-[#050505] pointer-events-none flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-all duration-300 border border-gray-900 group-hover:border-gray-700">
+                        <iframe class="relative z-10 w-full h-full object-cover" 
                                 src="https://www.youtube.com/embed/${work.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${work.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
                                 frameborder="0" allow="autoplay; encrypted-media">
                         </iframe>
-                        <div class="absolute inset-0 flex items-center justify-center z-20">
+                        <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"></div>
+                        <div class="absolute inset-0 flex items-center justify-center z-30">
                             <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 opacity-70 group-hover:scale-110 group-hover:opacity-100 transition-all duration-300 shadow-xl">
                                 <i class="fas fa-play text-white text-xs ml-1"></i>
                             </div>
@@ -569,27 +557,36 @@
                     </div>`;
             } else {
                 clickAction = `onclick="openLightbox('${work.imageUrl}')"`;
-                mediaHTML = `<img src="${work.imageUrl}" alt="${work.title}" class="w-full ${isHome ? 'aspect-[3/4]' : 'h-auto'} object-cover portfolio-img rounded-xl" onerror="this.src='https://via.placeholder.com/800x600?text=Image+Not+Found'">`;
+                mediaHTML = `
+                    <div class="w-full ${isHome ? 'aspect-[9/16]' : 'aspect-[9/16] md:aspect-auto'} relative rounded-xl overflow-hidden bg-[#050505] shadow-lg group-hover:shadow-2xl transition-all duration-300 border border-gray-900 group-hover:border-gray-700">
+                        <img src="${work.imageUrl}" alt="${work.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://via.placeholder.com/800x1422?text=Image+Not+Found'">
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"></div>
+                        <div class="absolute inset-0 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-xl scale-90 group-hover:scale-110 transition-all duration-300">
+                                <i class="fas fa-search text-white text-xs"></i>
+                            </div>
+                        </div>
+                    </div>`;
             }
 
             let tagsHTML = '';
             if(work.tags) {
-                tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-white/20 text-white px-2 py-0.5 rounded text-[8px] mr-1 mt-2">#${t.trim()}</span>`).join('');
+                tagsHTML = work.tags.split(',').map(t => `<span class="inline-block bg-[#1a1a1a] text-gray-400 border border-gray-800 px-2 py-0.5 rounded text-[10px] mr-1 mt-1">#${t.trim()}</span>`).join('');
             }
 
             return `
-                <div class="portfolio-item rounded-xl w-full break-inside-avoid ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view relative group cursor-pointer shadow-lg ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards;">
+                <div class="portfolio-item w-full break-inside-avoid ${isHome ? 'mb-0' : 'mb-6 md:mb-8'} fade-up in-view group cursor-pointer ${videoClass}" ${clickAction} style="animation: fadeIn 0.8s ease forwards; background: transparent;">
                     ${mediaHTML}
-                    <div class="portfolio-overlay rounded-xl absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-4 md:p-5">
-                        <p class="text-[9px] tracking-widest text-blue-400 mb-1 uppercase font-bold">${categoryLabel}</p>
-                        <h3 class="text-base md:text-xl serif-tc text-white font-bold leading-tight drop-shadow-md">${work.title}</h3>
-                        <div>${tagsHTML}</div>
+                    <div class="mt-4 px-2">
+                        <p class="text-[9px] tracking-widest text-blue-500 mb-1.5 uppercase font-bold">${categoryLabel}</p>
+                        <h3 class="text-base md:text-lg serif-tc text-white font-bold leading-tight truncate group-hover:text-blue-400 transition-colors">${work.title}</h3>
+                        <div class="flex flex-wrap gap-1 mt-2">${tagsHTML}</div>
                     </div>
                 </div>
             `;
         }
 
-      // 雲朵特效與數字滾動運算核心
+        // 雲朵特效與數字滾動運算核心
         const scrollContainer = document.getElementById('home-scroll-container');
         const engGroup = document.getElementById('eng-title-group');
         const chiGroup = document.getElementById('chi-title-group');
@@ -599,7 +596,6 @@
         const cloudRightFront = document.getElementById('cloud-right-front');
 
         function updateScrollEffects() {
-            // 1. 數字連動更新
             const stats = document.querySelectorAll('.stat-num');
             const windowHeight = window.innerHeight;
 
@@ -616,7 +612,6 @@
                 stat.innerHTML = currentVal + (stat.dataset.suffix || '');
             });
 
-            // 2. 雲朵遮擋與文字切換特效
             if(document.getElementById('page-home').classList.contains('active') && scrollContainer) {
                 const scrollY = window.scrollY;
                 const maxScroll = window.innerHeight * 1.2; 
@@ -624,9 +619,9 @@
                 let progress = scrollY / maxScroll;
                 progress = Math.max(0, Math.min(1, progress));
 
-               // 匠人精神優化：實作前後景視差滾動 (Parallax)
-                const translateXFront = (1 - progress) * 100; // 前景移動快 (推滿 100%)
-                const translateXBack = (1 - progress) * 60;   // 後景移動慢 (只推 60%)
+                // 前後景視差滾動
+                const translateXFront = (1 - progress) * 100;
+                const translateXBack = (1 - progress) * 60;
 
                 if(cloudLeftFront) cloudLeftFront.style.transform = `translateX(-${translateXFront}%)`;
                 if(cloudRightFront) cloudRightFront.style.transform = `translateX(${translateXFront}%)`;
