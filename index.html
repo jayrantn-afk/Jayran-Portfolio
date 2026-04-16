@@ -47,8 +47,8 @@
         #home-scroll-container { height: 250vh; position: relative; }
         #hero-sticky-view { position: sticky; top: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .cloud-layer { position: absolute; top: 0; height: 100vh; width: 60vw; z-index: 20; pointer-events: none; display: flex; align-items: center; }
-        #cloud-left { left: 0; transform: translateX(-100%); justify-content: flex-start; }
-        #cloud-right { right: 0; transform: translateX(100%); justify-content: flex-end; }
+      #cloud-left-back, #cloud-left-front { left: 0; transform: translateX(-100%); justify-content: flex-start; }
+        #cloud-right-back, #cloud-right-front { right: 0; transform: translateX(100%); justify-content: flex-end; }
         .real-cloud-img { height: 150%; width: auto; max-width: none; object-fit: cover; opacity: 0.9; filter: drop-shadow(0px 20px 30px rgba(0,0,0,0.5)); }
         #eng-title-group { position: absolute; z-index: 10; text-align: center; width: 100%; }
         #chi-title-group { position: absolute; z-index: 30; text-align: center; width: 100%; opacity: 0; transform: translateY(30px); }
@@ -97,15 +97,22 @@
                     </p>
                 </div>
 
-                <div id="cloud-left" class="cloud-layer">
-                    <img src="cloud-left.png" alt="" class="real-cloud-img" style="object-position: left center;" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='rgba(200,200,200,0.05)'; this.parentElement.style.filter='blur(40px)'; this.parentElement.style.borderRadius='50%';">
+               <div id="cloud-left-back" class="cloud-layer opacity-70 z-[18]">
+                    <img src="雲1.png" alt="" class="real-cloud-img scale-90" style="object-position: left center;" onerror="this.style.display='none';">
                 </div>
-                <div id="cloud-right" class="cloud-layer">
-                    <img src="cloud-right.png" alt="" class="real-cloud-img" style="object-position: right center;" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='rgba(200,200,200,0.05)'; this.parentElement.style.filter='blur(40px)'; this.parentElement.style.borderRadius='50%';">
+                <div id="cloud-right-back" class="cloud-layer opacity-70 z-[18]">
+                    <img src="雲2.png" alt="" class="real-cloud-img scale-90" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
-                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none">
-                    <img src="jieran-brush.png" alt="杰冉" class="max-h-40 w-auto filter drop-shadow-2xl" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[20]">
+                    <img src="杰冉字體.png" alt="杰冉" class="max-h-40 w-auto filter drop-shadow-2xl" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                </div>
+
+                <div id="cloud-left-front" class="cloud-layer z-[25]">
+                    <img src="雲3.png" alt="" class="real-cloud-img scale-110" style="object-position: left center;" onerror="this.style.display='none';">
+                </div>
+                <div id="cloud-right-front" class="cloud-layer z-[25]">
+                    <img src="雲4.png" alt="" class="real-cloud-img scale-110" style="object-position: right center;" onerror="this.style.display='none';">
                 </div>
 
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 opacity-70 animate-pulse z-40 pointer-events-none">
@@ -582,12 +589,14 @@
             `;
         }
 
-        // 雲朵特效與數字滾動運算核心
+      // 雲朵特效與數字滾動運算核心
         const scrollContainer = document.getElementById('home-scroll-container');
         const engGroup = document.getElementById('eng-title-group');
         const chiGroup = document.getElementById('chi-title-group');
-        const cloudLeft = document.getElementById('cloud-left');
-        const cloudRight = document.getElementById('cloud-right');
+        const cloudLeftBack = document.getElementById('cloud-left-back');
+        const cloudLeftFront = document.getElementById('cloud-left-front');
+        const cloudRightBack = document.getElementById('cloud-right-back');
+        const cloudRightFront = document.getElementById('cloud-right-front');
 
         function updateScrollEffects() {
             // 1. 數字連動更新
@@ -615,9 +624,14 @@
                 let progress = scrollY / maxScroll;
                 progress = Math.max(0, Math.min(1, progress));
 
-                const translateX = (1 - progress) * 100;
-                if(cloudLeft) cloudLeft.style.transform = `translateX(-${translateX}%)`;
-                if(cloudRight) cloudRight.style.transform = `translateX(${translateX}%)`;
+               // 匠人精神優化：實作前後景視差滾動 (Parallax)
+                const translateXFront = (1 - progress) * 100; // 前景移動快 (推滿 100%)
+                const translateXBack = (1 - progress) * 60;   // 後景移動慢 (只推 60%)
+
+                if(cloudLeftFront) cloudLeftFront.style.transform = `translateX(-${translateXFront}%)`;
+                if(cloudRightFront) cloudRightFront.style.transform = `translateX(${translateXFront}%)`;
+                if(cloudLeftBack) cloudLeftBack.style.transform = `translateX(-${translateXBack}%)`;
+                if(cloudRightBack) cloudRightBack.style.transform = `translateX(${translateXBack}%)`;
 
                 let engOpacity = 1 - (progress * 2);
                 engOpacity = Math.max(0, engOpacity);
