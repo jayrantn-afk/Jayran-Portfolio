@@ -508,12 +508,13 @@
             }
         };
 
-        window.toggleFeatured = async function(id) {
+       window.toggleFeatured = async function(id) {
             const work = allWorks.find(w => w.id === id);
             if(!work) return;
             if(!work.isFeatured) {
                 const featuredCount = allWorks.filter(w => w.isFeatured).length;
-                if(featuredCount >= 10) return alert("⚠️ 首頁精選最多只能設定 10 個！");
+                // 【匠人優化】下修精選防呆機制為 5，確保前台五等分布局完美不爆框
+                if(featuredCount >= 5) return alert("⚠️ 首頁精選最多只能設定 5 個，以維持版面完美比例！");
             }
             showLoader("更新狀態...");
             await updateDoc(doc(db, "jayran_works", id), { isFeatured: !work.isFeatured });
