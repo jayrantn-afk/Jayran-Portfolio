@@ -35,7 +35,6 @@
         <div id="loader-text" class="text-lg font-bold text-gray-700 tracking-widest">資料處理中...</div>
     </div>
 
-    <!-- 🌟 版本編號：固定卡死在畫面右下角，不會被捲動或內容擠走 -->
     <button onclick="openVersionModal()" class="fixed bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 text-[10px] text-gray-500 hover:text-blue-600 hover:border-blue-300 tracking-widest font-mono font-bold z-50 transition cursor-pointer flex items-center gap-1.5">
         V 4.0.1 JAYRAN CORE <i class="fas fa-info-circle text-xs"></i>
     </button>
@@ -44,7 +43,7 @@
         <aside class="w-96 bg-white shadow-2xl flex flex-col z-10">
             <div class="p-6 bg-gray-900 text-white flex justify-between items-center">
                 <h1 class="text-xl font-black tracking-widest uppercase" id="panel-title">Admin Panel</h1>
-                <a href="index.html" target="_blank" class="text-gray-400 hover:text-white text-sm" title="預覽前台"><i class="fas fa-external-link-alt"></i></a>
+                <a href="image.html" target="_blank" class="text-gray-400 hover:text-white text-sm" title="預覽前台"><i class="fas fa-external-link-alt"></i></a>
             </div>
             
             <div class="p-6 flex-1 overflow-y-auto">
@@ -174,37 +173,21 @@
                     <h2 class="text-2xl font-black mb-6 border-b pb-4">網站視覺與文字設定</h2>
                     <div class="space-y-6">
                         
-                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>首頁背景大圖 (若留空則播影片)</h3>
-                            <div>
-                                <input type="file" id="set-hero-bg-input" accept="image/*" class="hidden">
-                                <div id="set-hero-bg-box" class="border-2 border-dashed border-blue-300 bg-white rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50 transition" onclick="document.getElementById('set-hero-bg-input').click()">
-                                    <img id="set-hero-bg-preview" class="hidden max-h-40 mx-auto rounded object-contain">
-                                    <div id="set-hero-bg-placeholder">
-                                        <i class="fas fa-cloud-upload-alt text-3xl text-blue-400 mb-2"></i>
-                                        <div class="text-sm font-bold text-blue-600">點擊上傳圖片</div>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="set-hero-bg-base64">
-                                <button onclick="clearHeroBg()" class="mt-2 text-xs font-bold text-red-500 hover:text-red-700"><i class="fas fa-trash"></i> 移除背景圖片 (恢復播放影片)</button>
-                            </div>
-                        </div>
-
                         <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-gray-500"></i>首頁大標題</h3>
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-heading mr-2 text-gray-500"></i>首頁大標題 (杰冉影像工作室)</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第一行 (粗體)</label>
-                                    <input id="set-h1" class="w-full border p-3 rounded-lg font-bold" placeholder="Crafting Visual">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">第一行 (粗體，杰冉字體)</label>
+                                    <input id="set-h1" class="w-full border p-3 rounded-lg font-bold" placeholder="杰冉影像工作室">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">第二行 (斜體藝術字)</label>
-                                    <input id="set-h2" class="w-full border p-3 rounded-lg font-bold" placeholder="Masterpieces.">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">第二行 (斜體藝術字，例如 Crafting Visual)</label>
+                                    <input id="set-h2" class="w-full border p-3 rounded-lg font-bold" placeholder="Crafting Visual">
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <label class="block text-xs font-bold text-gray-500 mb-1">下方中文副標題</label>
-                                <input id="set-sub" class="w-full border p-3 rounded-lg" placeholder="杰冉影像工作室 — 專注於高質感影音製作與商業圖文設計">
+                                <label class="block text-xs font-bold text-gray-500 mb-1">下方副標題 (專注於高質感...)</label>
+                                <input id="set-sub" class="w-full border p-3 rounded-lg" placeholder="專注於高質感影音製作與商業圖文設計">
                             </div>
                         </div>
 
@@ -263,10 +246,13 @@
                 <div class="border-b pb-4">
                     <h3 class="font-bold text-gray-800 text-base mb-1">V 4.0.1 <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded ml-2 font-bold">最新</span></h3>
                     <ul class="list-disc pl-5 space-y-1 mt-2">
-                        <li><b>優化：</b>前台首頁視覺全面升級：杰冉字體移除厚重黑色陰影、副標加強可讀性。</li>
-                        <li><b>新增：</b>首頁統計數據區融入雲朵氛圍背景，視覺過渡更流暢。</li>
-                        <li><b>新增：</b>「觀看所有作品」CTA 按鈕加入呼吸光暈動畫，引導客戶進一步探索。</li>
+                        <li><b>優化：</b>前台首頁視覺全面升級：拔除影片背景，改為完全讀取您上傳的 山1.png 設為全站底圖。</li>
+                        <li><b>新增：</b>首頁雲朵粒子效果與统计數據區完美壓合，文字改為黑色以符合專業視覺。</li>
+                        <li><b>優化：</b>首頁大標題與副標題字體、字號專業化調整，更具質感。</li>
+                        <li><b>新增：</b>統計數據數據融入雲朵氣氛，視覺過渡與黑底作品區無縫過渡。</li>
                         <li><b>修復：</b>後台版本號按鈕改為固定浮動，不受捲動影響。</li>
+                        <li><b>修復：</b>前台重新整理時，滾動動畫 Logic 修正，專業重置回初始狀態。</li>
+                        <li><b>安全性：</b>拔除後台手動上傳首頁背景圖片的功能。</li>
                     </ul>
                 </div>
 
@@ -274,18 +260,7 @@
                     <h3 class="font-bold text-gray-800 text-base mb-1">V 4.0.0</h3>
                     <ul class="list-disc pl-5 space-y-1 mt-2">
                         <li><b>新增：</b>後台可動態編輯「關於我們：大事記」功能。</li>
-                        <li><b>優化：</b>首頁背景大圖與雲朵特效結合，導入「羽化漸層遮罩」平滑轉場。</li>
                         <li><b>優化：</b>替換書法標題為「杰冉字體.png」，並支援雲朵前景/後景視差立體效果。</li>
-                        <li><b>新增：</b>後台完善的更新日誌查看系統。</li>
-                    </ul>
-                </div>
-
-                <div class="border-b pb-4">
-                    <h3 class="font-bold text-gray-800 text-base mb-1">V 3.6.0</h3>
-                    <ul class="list-disc pl-5 space-y-1 mt-2">
-                        <li><b>修復：</b>直式長條影片(Shorts)比例精確鎖定，全面去除左右灰邊框。</li>
-                        <li><b>優化：</b>前台作品名稱移至影片下方，徹底解決遮擋問題。</li>
-                        <li><b>安全：</b>精選展出數量防呆機制下修為 5 個，確保排版完美五等分。</li>
                     </ul>
                 </div>
                 
@@ -293,7 +268,6 @@
                     <h3 class="font-bold text-gray-800 text-base mb-1">V 3.5.0</h3>
                     <ul class="list-disc pl-5 space-y-1 mt-2">
                         <li><b>新增：</b>全站標籤庫系統 (可自定義下拉選單)。</li>
-                        <li><b>優化：</b>前台聯絡表單升級為無跳轉 AJAX 直發系統。</li>
                     </ul>
                 </div>
             </div>
@@ -304,6 +278,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+        // 🔥 杰冉影像工作室 Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
             authDomain: "jayran-portfolio.firebaseapp.com",
@@ -320,7 +295,6 @@
         let currentView = 'animation';
         let sortableInstance = null;
         let editingWorkId = null;
-        let isHeroBgCleared = false; 
 
         window.openVersionModal = () => { document.getElementById('version-modal').style.display = 'flex'; };
         window.closeVersionModal = () => { document.getElementById('version-modal').style.display = 'none'; };
@@ -345,28 +319,9 @@
             });
         }
 
-        document.getElementById('set-hero-bg-input').addEventListener('change', async (e) => {
-            const f = e.target.files[0];
-            if(!f) return;
-            showLoader("處理背景圖中...");
-            const base64 = await compressImage(f, 1600, 900, 0.7); 
-            document.getElementById('set-hero-bg-base64').value = base64;
-            document.getElementById('set-hero-bg-preview').src = base64;
-            document.getElementById('set-hero-bg-preview').classList.remove('hidden');
-            document.getElementById('set-hero-bg-placeholder').classList.add('hidden');
-            isHeroBgCleared = false;
-            hideLoader();
-        });
-
-        window.clearHeroBg = function() {
-            document.getElementById('set-hero-bg-base64').value = '';
-            document.getElementById('set-hero-bg-preview').src = '';
-            document.getElementById('set-hero-bg-preview').classList.add('hidden');
-            document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
-            document.getElementById('set-hero-bg-input').value = '';
-            isHeroBgCleared = true;
-            alert("已預計移除背景圖片。點擊「儲存設定」生效。");
-        };
+        // ❌ 此為拔除的功能相關 JS 邏輯，已徹底移除
+        // document.getElementById('set-hero-bg-input')...
+        // window.clearHeroBg = function()...
 
         document.getElementById('w-img-input').addEventListener('change', async (e) => {
             const f = e.target.files[0];
@@ -505,6 +460,8 @@
                 } else {
                     addMilestoneRow('2025 年 10 月', '杰冉影像工作室正式創立...');
                 }
+                
+                // ❌ 讀取背景圖上傳預覽的 JS 邏輯已拔除，不再讀取它
             }
         }
 
@@ -529,21 +486,11 @@
             updateTagSelect(data.globalTags);
 
             try {
-                const bgBase64 = document.getElementById('set-hero-bg-base64').value;
-                if (bgBase64) { 
-                    data.heroBg = bgBase64; 
-                    document.getElementById('set-hero-bg-base64').value = '';
-                    document.getElementById('set-hero-bg-preview').classList.add('hidden');
-                    document.getElementById('set-hero-bg-placeholder').classList.remove('hidden');
-                } else if (isHeroBgCleared) {
-                    data.heroBg = ""; 
-                } else {
-                    const docSnap = await getDoc(doc(db, "jayran_settings", "frontend"));
-                    if (docSnap.exists() && docSnap.data().heroBg) data.heroBg = docSnap.data().heroBg;
-                }
+                // ❌ 儲存上傳背景圖片的 JS 邏輯已徹底拔除，不再儲存 heroBg
+                // let bgBase64 =...
+                
                 await setDoc(doc(db, "jayran_settings", "frontend"), data);
-                isHeroBgCleared = false; 
-                alert("✅ 網站設定 (包含大事記) 已更新同步！");
+                alert("✅ 網站設定 (包含大事記) 已更新同步！您的首頁背景將自動讀取 山1.png。");
             } catch (error) { alert("⛔ 儲存失敗！"); } 
             finally { hideLoader(); saveBtn.disabled = false; }
         });
