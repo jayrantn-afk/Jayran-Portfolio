@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Noto+Serif+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -101,12 +101,12 @@
                 </div>
 
                 <div id="chi-title-group" class="flex flex-col items-center justify-center h-full pointer-events-none z-[30] w-full px-4">
-                    <div class="flex flex-col items-center justify-center drop-shadow-[0_15px_25px_rgba(0,0,0,0.95)]">
-                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-8" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
+                    <div class="flex flex-col items-center justify-center drop-shadow-[0_15px_25px_rgba(0,0,0,0.95)] mt-10">
+                        <img src="杰冉字體.png" alt="杰冉" class="max-h-40 md:max-h-56 w-auto filter drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] mb-10" onerror="this.outerHTML='<h1 class=\'text-7xl md:text-[10rem] font-black tracking-widest text-white\' style=\'font-family: &quot;Noto Serif TC&quot;, serif;\'>杰冉</h1>'">
                         
-                        <h2 class="text-2xl md:text-4xl font-black tracking-[0.8em] text-white mb-6 ml-[0.4em] serif-tc">冉冉升起</h2>
+                        <h2 class="text-3xl md:text-[42px] font-light tracking-[0.6em] text-white/90 mb-8 ml-[0.6em] serif-tc drop-shadow-lg">冉冉升起</h2>
                         
-                        <p class="text-xs md:text-[15px] tracking-[0.2em] md:tracking-[0.3em] text-gray-200 max-w-3xl leading-relaxed md:leading-[2.5] font-medium text-center bg-black/30 px-6 py-4 rounded-2xl backdrop-blur-sm border border-white/5">
+                        <p class="text-[11px] md:text-sm tracking-[0.4em] text-gray-300/80 max-w-2xl leading-[2.5] font-light text-center drop-shadow-md uppercase">
                             專注於極致的光影雕琢與品牌故事淬鍊<br>
                             為每一件作品鑄就無法取代的視覺張力
                         </p>
@@ -383,7 +383,6 @@
                     if(pageEmail) { pageEmail.innerText = data.email; pageEmail.href = "mailto:" + data.email; }
                 }
 
-                // 大事記動態渲染
                 const msContainer = document.getElementById('dyn-milestones');
                 if(data.milestones && data.milestones.length > 0) {
                     msContainer.innerHTML = data.milestones.map(m => `
@@ -399,7 +398,6 @@
             }
         }, (error) => console.error(error));
 
-        // AJAX 表單送出
         window.sendEmail = function() {
             const name = document.getElementById('contact-name').value;
             const person = document.getElementById('contact-person').value;
@@ -693,3 +691,4 @@
     </script>
 </body>
 </html>
+
