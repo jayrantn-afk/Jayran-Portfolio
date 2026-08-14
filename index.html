@@ -16,16 +16,32 @@
     --line: rgba(27,39,64,0.14);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{background:var(--paper); color:var(--ink); font-family:'Noto Sans TC',sans-serif; overflow:hidden; height:100vh;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper); color:var(--ink); font-family:'Noto Sans TC',sans-serif;}
   h1,h2,h3{font-family:'Noto Sans TC',sans-serif; font-weight:700; letter-spacing:-0.01em;}
   a{color:inherit; text-decoration:none;}
   img,svg{max-width:100%; display:block;}
   .eyebrow{font-family:'Poppins',sans-serif; font-size:11px; font-weight:500; color:var(--blue); letter-spacing:0.14em; text-transform:uppercase;}
+  section[id]{scroll-margin-top:92px;}
 
-  header{position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:22px 36px;}
+  /* ---------- Header(固定頂部,不再用橫向滾輪切頁)---------- */
+  header{position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:18px 36px; background:rgba(245,245,243,0.88); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
   .logo-mark{display:flex; align-items:center; gap:10px; cursor:pointer; transition:opacity .25s ease;}
   .logo-mark:hover{opacity:0.72;}
-  .logo-mark img{height:42px; width:auto;}
+  .logo-mark img{height:38px; width:auto;}
+  .header-right{display:flex; align-items:center; gap:34px;}
+
+  /* ---------- 右上角頁籤導覽(原本在螢幕右側置中,改移到右上角)---------- */
+  #page-nav{display:flex; align-items:center; gap:22px;}
+  .pn-item{display:flex; align-items:center; gap:8px; cursor:pointer; opacity:0.4; transition:opacity .25s;}
+  .pn-item:hover{opacity:0.8;}
+  .pn-item.active{opacity:1;}
+  .pn-item .pn-label{font-family:'Poppins',sans-serif; font-size:11.5px; font-weight:500; letter-spacing:0.1em;}
+  .pn-item.active .pn-label{color:var(--blue); font-weight:700;}
+  .pn-item .pn-dot{width:6px; height:6px; background:var(--ink); transition:transform .25s ease, background .25s ease;}
+  .pn-item:hover .pn-dot{transform:scale(1.35);}
+  .pn-item.active .pn-dot{background:var(--blue); transform:scale(1.35);}
+  @media(max-width:900px){ #page-nav{display:none;} }
 
   /* 互動按鈕:底層色塊由左至右掃入,取代單純的 background 切換 */
   .btn-cta,.btn-ghost{position:relative; z-index:1; overflow:hidden; isolation:isolate; transition:color .4s ease;}
@@ -42,27 +58,32 @@
   .btn-ghost:hover{color:#fff !important;}
   .btn-ghost:hover::before{transform:scaleX(1);}
 
-  #slider{display:flex; height:100vh; width:500vw; transition:transform .7s cubic-bezier(.65,0,.35,1);}
-  .panel{width:100vw; height:100vh; flex-shrink:0; display:flex; align-items:center; padding:0 90px; position:relative; overflow:hidden;}
-  .panel-inner{max-width:1140px; margin:0 auto; width:100%; position:relative; z-index:2;}
-  @media(max-width:760px){ .panel{padding:0 24px;} }
+  /* ---------- 版面基礎(改為正常上下捲動,不再是整頁橫向切換)---------- */
+  .section{padding:100px 90px; position:relative; overflow:hidden;}
+  .section-inner{max-width:1140px; margin:0 auto; width:100%; position:relative; z-index:2;}
 
-  /* 色塊裝飾(取代原本手繪插畫) */
+  /* 每個獨立頁面進去先展示大標題(打字動畫),再接內容,呼應簡訊設計的做法 */
+  .page-hero{text-align:center; max-width:760px; margin:0 auto 64px;}
+  .page-hero .ph-title{font-size:clamp(34px,5.2vw,58px); font-weight:700; color:var(--ink); opacity:0; transform:translateY(30px); transition:opacity .7s cubic-bezier(.22,.8,.32,1), transform .7s cubic-bezier(.22,.8,.32,1);}
+  .page-hero .ph-title.in{opacity:1; transform:translateY(0);}
+  .page-hero .ph-sub{margin-top:18px; font-size:15px; color:#6B7385; font-weight:300; opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.22,.8,.32,1) .12s, transform .7s cubic-bezier(.22,.8,.32,1) .12s;}
+  .page-hero .ph-sub.in{opacity:1; transform:translateY(0);}
+  @media(max-width:760px){ .section{padding:80px 24px;} }
+
+  /* Services / Works / Contact 現在是各自獨立的頁面,只能靠右上導覽點擊切換過去,
+     不會跟著首頁一起被捲動到,所以需要自己的頂部留白來閃避固定 header */
+  .services-section,.works-section,.contact-section{min-height:100vh; padding-top:150px;}
+
+  /* 頁面切換容器:同一時間只顯示一個 view */
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- 色塊裝飾 ---------- */
   .block{position:absolute; z-index:0;}
 
-  #page-nav{position:fixed; right:32px; top:50%; transform:translateY(-50%); z-index:100; display:flex; flex-direction:column; gap:20px; align-items:flex-end;}
-  .pn-item{display:flex; align-items:center; gap:10px; cursor:pointer; opacity:0.35; transition:opacity .25s;}
-  .pn-item:hover{opacity:0.75;}
-  .pn-item.active{opacity:1;}
-  .pn-item .pn-label{font-family:'Poppins',sans-serif; font-size:11px; font-weight:500; letter-spacing:0.12em;}
-  .pn-item .pn-dot{width:8px; height:8px; background:var(--ink); transition:transform .25s ease, background .25s ease;}
-  .pn-item:hover .pn-dot{transform:scale(1.35);}
-  .pn-item.active .pn-dot{background:var(--blue); transform:scale(1.35);}
-  @media(max-width:760px){ #page-nav{display:none;} }
-
-  #swipe-hint{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:100; font-size:11px; color:var(--ink); opacity:0.45; letter-spacing:0.05em;}
-
-  /* Panel 0: Home */
+  /* ---------- Hero ---------- */
+  .hero-section{padding:168px 90px 100px; min-height:92vh; display:flex; align-items:center;}
+  .hero-grid{display:grid; grid-template-columns:1.15fr 0.85fr; gap:30px; align-items:center; width:100%;}
   .hero h1{font-size:clamp(30px,4.4vw,54px); line-height:1.4; color:var(--ink); font-weight:700;}
   .hero h1 .hl{color:var(--blue);}
   .hero .sub{margin-top:22px; max-width:440px; font-size:15px; color:#6B7385; font-weight:300; line-height:1.9;}
@@ -72,43 +93,14 @@
   .stat-row .n{font-family:'Poppins',sans-serif; font-size:26px; font-weight:600; color:var(--blue);}
   .stat-row .l{font-size:11px; color:#8A93A6; margin-top:4px; letter-spacing:0.06em; font-weight:300;}
 
-  /* Panel: Services */
-  /* 主推:一條龍合作流程 — 做成浮起卡片,互動感最強 */
-  .process-row{display:grid; grid-template-columns:repeat(4,1fr); gap:26px; margin-bottom:70px;}
-  .p-step{
-    position:relative; cursor:default; padding:26px 22px 22px; margin:-26px -22px 0;
-    border:1px solid transparent; border-radius:2px; overflow:hidden;
-    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease, background .35s ease;
-  }
-  .p-step::before{
-    content:''; position:absolute; left:0; top:0; height:3px; width:0; background:var(--gold);
-    transition:width .4s ease;
-  }
-  .p-step:hover{
-    transform:translateY(-9px);
-    box-shadow:0 20px 36px rgba(23,63,140,0.14);
-    border-color:var(--line); background:#fff;
-  }
-  .p-step:hover::before{width:100%;}
-  .p-step .num{font-family:'Poppins',sans-serif; font-weight:600; font-size:22px; color:var(--blue); margin-bottom:14px; transition:transform .35s ease, color .35s ease; display:inline-block;}
-  .p-step:hover .num{color:var(--gold); transform:translateY(-3px) scale(1.1);}
-  .p-step h4{font-size:14px; margin-bottom:6px; font-weight:500;}
-  .p-step p{font-size:11.5px; color:#8A93A6; font-weight:300;}
+  .hero-graphic{position:relative; height:56vh; max-height:420px;}
+  .hg-block{position:absolute; border-radius:4px;}
+  .hg-navy{width:76%; height:86%; right:0; top:7%; z-index:2; background:linear-gradient(150deg,#33456f 0%,var(--blue) 45%,#182645 100%); box-shadow:0 30px 60px rgba(23,63,140,0.22);}
+  .hg-gold{width:44%; height:42%; left:0; bottom:-4%; z-index:1; background:var(--gold); box-shadow:0 20px 40px rgba(245,185,66,0.28);}
+  .hg-dots{position:absolute; width:130px; height:130px; right:-14px; top:-18px; z-index:0; background-image:radial-gradient(var(--ink) 1.6px, transparent 1.6px); background-size:16px 16px; opacity:.16;}
 
-  /* 次要:延伸服務項目 — 保留簡單的移動回饋就好,不搶主流程的風采 */
-  .service-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:44px;}
-  .service-card{padding:0; cursor:default; transition:transform .3s ease;}
-  .service-card:hover{transform:translateX(5px);}
-  .service-card .icon{width:28px; height:28px; margin-bottom:22px; transition:transform .3s ease;}
-  .service-card:hover .icon{transform:translateY(-2px);}
-  .service-card h3{font-size:15px; margin-bottom:10px; font-weight:500; transition:color .3s ease;}
-  .service-card:hover h3{color:var(--blue);}
-  .service-card p{font-size:12px; color:#8A93A6; font-weight:300; line-height:1.8;}
-  @media(max-width:900px){ .process-row,.service-grid{grid-template-columns:1fr 1fr;} }
-
-  /* Panel: About — 白底留白,逐段浮現插畫標語 */
-  .about-panel{background:var(--paper); color:var(--ink); align-items:stretch; padding:0;}
-  .about-scroll{width:100%; height:100vh; overflow-y:auto; padding:130px 64px 60px;}
+  /* ---------- About:直接接在首頁下方,滑到哪動畫跑到哪 ---------- */
+  .about-section{background:var(--paper);}
   .about-intro{max-width:600px; margin:0 auto 70px;}
   .about-intro .note{margin-top:18px; font-size:14px; color:#6B7385; font-weight:300; line-height:1.9;}
   .about-slide{
@@ -126,19 +118,63 @@
   .team-strip{border-left:2px solid var(--gold); padding:18px 24px; margin-top:30px; max-width:420px;}
   .team-strip strong{display:block; font-size:15px; margin-bottom:6px; font-weight:600;}
   .team-strip p{font-size:13px; color:#6B7385; font-weight:300;}
-  @media(max-width:860px){ .about-slide{grid-template-columns:1fr;} .about-scroll{padding:110px 24px 50px;} }
+  @media(max-width:860px){ .about-slide{grid-template-columns:1fr;} }
 
-  /* Panel: Works */
+  /* ---------- Services ---------- */
+
+  /* 服務項目卡片 — 現在可點擊進入詳細頁。企劃發想是主推項目,獨立一個大範圍;
+     其餘三項(影音製作/2D動畫/平面設計)自成一排小卡片 */
+  .service-featured{
+    display:flex; align-items:center; gap:36px; cursor:pointer;
+    background:#fff; border:1px solid var(--line); border-radius:2px; padding:38px 44px; margin-bottom:26px;
+    position:relative; overflow:hidden;
+    transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease, background .55s cubic-bezier(.4,0,.2,1);
+  }
+  .service-featured::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--gold); transform:scaleY(0); transform-origin:top; transition:transform .4s ease; z-index:1;}
+  .service-featured:hover{
+    transform:translateY(-8px);
+    box-shadow:0 28px 50px rgba(23,63,140,0.3);
+    border-color:var(--blue);
+    background:linear-gradient(135deg,#1c2c52 0%, var(--blue) 55%, #223464 100%);
+  }
+  .service-featured:hover::before{transform:scaleY(1);}
+  .service-featured .sf-badge{display:block; font-family:'Poppins',sans-serif; font-size:11px; font-weight:600; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; transition:color .4s ease;}
+  .service-featured:hover .sf-badge{color:#FFD866;}
+  .service-featured .icon{width:50px; height:50px; flex-shrink:0; transition:transform .35s ease, filter .45s ease;}
+  .service-featured:hover .icon{transform:translateY(-3px) scale(1.08); filter:brightness(0) invert(1);}
+  .service-featured h3{font-size:23px; font-weight:700; margin-bottom:10px; transition:color .4s ease;}
+  .service-featured:hover h3{color:#fff;}
+  .service-featured p{font-size:13.5px; color:#8A93A6; font-weight:300; line-height:1.85; max-width:480px; transition:color .4s ease;}
+  .service-featured:hover p{color:rgba(255,255,255,0.75);}
+  .service-featured .more{margin-left:auto; flex-shrink:0; display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--blue); white-space:nowrap; transition:color .4s ease, transform .35s ease;}
+  .service-featured:hover .more{color:var(--gold); transform:translateX(4px);}
+  @media(max-width:760px){ .service-featured{flex-direction:column; align-items:flex-start; gap:18px;} .service-featured .more{margin-left:0;} }
+
+  .service-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:44px;}
+  .service-card{padding:0; cursor:pointer; transition:transform .3s ease;}
+  .service-card:hover{transform:translateX(5px);}
+  .service-card .icon{width:28px; height:28px; margin-bottom:22px; transition:transform .3s ease;}
+  .service-card:hover .icon{transform:translateY(-2px);}
+  .service-card h3{font-size:15px; margin-bottom:10px; font-weight:500; transition:color .3s ease;}
+  .service-card:hover h3{color:var(--blue);}
+  .service-card p{font-size:12px; color:#8A93A6; font-weight:300; line-height:1.8;}
+  .service-card .more{display:inline-block; margin-top:12px; font-size:11px; font-weight:600; color:var(--blue); letter-spacing:0.04em; opacity:0; transform:translateX(-4px); transition:opacity .3s ease, transform .3s ease;}
+  .service-card:hover .more{opacity:1; transform:translateX(0);}
+  @media(max-width:900px){ .service-grid{grid-template-columns:1fr 1fr;} }
+
+  /* ---------- Works ---------- */
   .work-filters{display:flex; gap:0;}
   .work-filters .filter-btn{background:var(--paper); border:1px solid var(--line); border-left:none; padding:9px 20px; font-size:12px; font-weight:400; cursor:pointer; color:var(--ink); transition:background .25s ease, color .25s ease, border-color .25s ease;}
   .work-filters .filter-btn:first-child{border-left:1px solid var(--line);}
   .work-filters .filter-btn:hover:not(.active){background:var(--ink); color:#fff; border-color:var(--ink);}
   .work-filters .filter-btn.active{background:var(--blue); color:#fff; border-color:var(--blue);}
-  .work-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; max-height:56vh; overflow-y:auto; padding-bottom:8px;}
+  .work-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .work-grid.cat-graphic{grid-template-columns:repeat(2,1fr); max-width:900px; margin:0 auto;}
   .work-loading,.work-empty{grid-column:1/-1; text-align:center; padding:40px 0; color:#8A93A6; font-size:13px;}
   .w-card{background:#fff; border:1px solid var(--line); overflow:hidden; cursor:pointer; transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;}
   .w-card:hover{transform:translateY(-5px); box-shadow:0 16px 28px rgba(23,63,140,0.16); border-color:var(--blue);}
   .w-media{aspect-ratio:9/16; background:#eee; overflow:hidden;}
+  .work-grid.cat-graphic .w-media{aspect-ratio:16/9;}
   .w-media img,.w-media iframe{width:100%; height:100%; object-fit:cover; border:none; transition:transform .5s ease;}
   .w-card:hover .w-media img{transform:scale(1.07);}
   .w-body{padding:10px 12px;}
@@ -146,14 +182,13 @@
   .w-title{font-size:13px; margin-top:4px; font-weight:700;}
   @media(max-width:900px){ .work-grid{grid-template-columns:1fr 1fr;} }
 
-  /* Panel: Contact */
+  /* ---------- Contact ---------- */
   .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; align-items:stretch;}
   .contact-left{padding-right:50px;}
   .info-list{margin-top:30px; display:flex; flex-direction:column; gap:24px;}
   .info-item .lbl{font-size:11.5px; color:var(--blue); font-weight:700; letter-spacing:0.09em; text-transform:uppercase;}
   .info-item .val{font-size:17px; margin-top:5px; font-weight:400; line-height:1.6;}
 
-  /* LINE 官方帳號:重點導流按鈕,用 LINE 品牌綠跳出於藍/金色系之外 */
   .line-cta{
     display:inline-flex; align-items:center; gap:9px; margin-top:8px;
     background:#06C755; color:#fff !important; font-size:15px; font-weight:600;
@@ -168,7 +203,7 @@
   .line-cta:hover::before{transform:scaleX(1);}
   .line-cta:hover{box-shadow:0 12px 22px rgba(6,199,85,0.32); transform:translateY(-2px);}
   .line-cta svg{width:19px; height:19px; flex-shrink:0;}
-  .form-panel{background:var(--paper); border:1px solid var(--line); padding:36px;}
+  .form-panel{background:#fff; border:1px solid var(--line); padding:36px;}
   .form-panel .field{margin-bottom:16px;}
   .form-panel label{display:block; font-size:11px; color:#8A93A6; margin-bottom:6px; font-weight:300;}
   .form-panel input,.form-panel select,.form-panel textarea{width:100%; background:#fff; border:1px solid var(--line); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; color:var(--ink); font-weight:300; transition:border-color .25s ease, box-shadow .25s ease;}
@@ -185,156 +220,189 @@
   }
   .submit-btn:hover::before{transform:scaleX(1);}
 
+  footer{text-align:center; padding:34px 24px; font-size:11.5px; color:#9098A8; background:var(--paper); border-top:1px solid var(--line);}
+
   #lightbox{position:fixed; inset:0; background:rgba(27,39,64,0.94); z-index:300; display:none; align-items:center; justify-content:center; padding:30px;}
   #lightbox.open{display:flex;}
   #lightbox img{max-width:90vw; max-height:90vh; object-fit:contain;}
   #lightbox .lb-close{position:absolute; top:24px; right:30px; color:#fff; font-size:32px; cursor:pointer; background:none; border:none;}
 
-  .float-cta{position:fixed; left:22px; bottom:22px; z-index:100; display:flex; align-items:center; gap:8px; background:#06C755; color:#fff; padding:13px 22px; font-size:12px; font-weight:500; letter-spacing:0.03em; transition:transform .3s ease, background .3s ease, box-shadow .3s ease;}
+  .float-cta{position:fixed; left:22px; bottom:22px; z-index:150; display:flex; align-items:center; gap:8px; background:#06C755; color:#fff; padding:13px 22px; font-size:12px; font-weight:500; letter-spacing:0.03em; transition:transform .3s ease, background .3s ease, box-shadow .3s ease;}
   .float-cta svg{width:16px; height:16px;}
   .float-cta:hover{background:#04A945; transform:translateY(-3px); box-shadow:0 10px 20px rgba(6,199,85,0.32);}
+
+  /* ---------- 服務詳細頁(從服務卡片點進來,之後可從後台編輯內容)---------- */
+  #service-detail{position:fixed; top:76px; left:0; right:0; bottom:0; background:#12192B; color:#fff; z-index:150; overflow-y:auto; transform:translateY(100%); transition:transform .5s cubic-bezier(.65,0,.35,1); padding:56px 8vw 100px; cursor:pointer;}
+  #service-detail .sd-inner{cursor:auto;}
+  #service-detail.open{transform:translateY(0);}
+  .sd-close{position:fixed; top:92px; right:36px; z-index:151; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.22); color:#fff; padding:10px 20px; font-size:13px; cursor:pointer; transition:background .25s ease; border-radius:2px;}
+  .sd-close:hover{background:rgba(255,255,255,0.18);}
+  .sd-inner{max-width:900px;}
+  .sd-icon{width:50px; height:50px; margin-bottom:26px;}
+  .sd-eyebrow{font-family:'Poppins',sans-serif; font-size:12px; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase; font-weight:600;}
+  .sd-title{font-size:clamp(28px,4vw,44px); margin-top:14px; font-weight:700; color:#fff;}
+  .sd-divider{width:46px; height:3px; background:var(--gold); margin:34px 0;}
+  .sd-desc{max-width:680px; font-size:14.5px; line-height:2; color:rgba(255,255,255,0.72); font-weight:300;}
+  .sd-sub-eyebrow{margin-top:64px; font-size:14px; font-weight:700; color:#fff; letter-spacing:0.02em;}
+  .sd-grid{display:grid; grid-template-columns:1fr 1fr; gap:34px 60px; margin-top:26px; max-width:880px;}
+  .sd-feat{display:flex; gap:16px; align-items:flex-start;}
+  .sd-num{flex-shrink:0; width:42px; height:42px; border:1px solid rgba(245,180,0,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Poppins',sans-serif; font-size:12px; color:var(--gold); font-weight:600;}
+  .sd-feat h4{font-size:14px; color:var(--gold); font-weight:600; margin-bottom:6px;}
+  .sd-feat p{font-size:12.5px; color:rgba(255,255,255,0.6); line-height:1.8; font-weight:300;}
+  .sd-cta{display:inline-block; margin-top:70px;}
+  @media(max-width:760px){ .sd-grid{grid-template-columns:1fr;} }
+
+  /* ---------- 聯絡我們懸浮視窗(不再是獨立頁面,點 CTA 才浮出)---------- */
+  #contact-modal{position:fixed; top:76px; left:0; right:0; bottom:0; background:#12192B; color:#fff; z-index:150; overflow-y:auto; transform:translateY(100%); transition:transform .5s cubic-bezier(.65,0,.35,1); padding:56px 8vw 100px; cursor:pointer;}
+  #contact-modal.open{transform:translateY(0);}
+  #contact-modal .cm-inner{cursor:auto; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:0.85fr 1.15fr; gap:70px; align-items:start;}
+  .cm-icon{width:38px; height:38px; margin-bottom:22px;}
+  .cm-title{font-size:clamp(26px,3.4vw,38px); font-weight:700; color:#fff;}
+  .cm-desc{margin-top:14px; max-width:360px; font-size:13.5px; color:rgba(255,255,255,0.6); font-weight:300; line-height:1.8;}
+  .cm-info{margin-top:36px; display:flex; flex-direction:column; gap:22px;}
+  .cm-info .lbl{font-size:11px; color:rgba(255,255,255,0.45); letter-spacing:0.08em; text-transform:uppercase; font-weight:700;}
+  .cm-info .val{font-size:15px; color:#fff; margin-top:5px; line-height:1.6; font-weight:400;}
+  #contact-modal .form-panel{background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14);}
+  #contact-modal .form-panel label{color:rgba(255,255,255,0.5);}
+  #contact-modal .form-panel input,#contact-modal .form-panel select,#contact-modal .form-panel textarea{background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;}
+  #contact-modal .form-panel input:focus,#contact-modal .form-panel select:focus,#contact-modal .form-panel textarea:focus{border-color:var(--gold); box-shadow:0 0 0 3px rgba(245,180,0,0.16);}
+  #contact-modal .submit-btn{background:var(--gold); color:#12192B;}
+  #contact-modal .submit-btn::before{background:#fff;}
+  @media(max-width:860px){ #contact-modal .cm-inner{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
 
 <header>
-  <a href="#" class="logo-mark go-to" data-i="0" aria-label="回首頁">
+  <a href="#home" class="logo-mark go-to" data-id="home" aria-label="回首頁">
     <img src="data:image/png;base64,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" alt="Jayran Studio">
   </a>
-  <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="btn-cta">預約免費諮詢</a>
+  <div class="header-right">
+    <nav id="page-nav">
+      <div class="pn-item active" data-id="home"><span class="pn-label">HOME</span><span class="pn-dot"></span></div>
+      <div class="pn-item" data-id="services"><span class="pn-label">SERVICES</span><span class="pn-dot"></span></div>
+      <div class="pn-item" data-id="works"><span class="pn-label">WORKS</span><span class="pn-dot"></span></div>
+    </nav>
+    <a href="#" class="btn-cta" onclick="window.openContactModal(); return false;">預約免費諮詢</a>
+  </div>
 </header>
 
-<div id="page-nav">
-  <div class="pn-item active" data-i="0"><span class="pn-label">HOME</span><span class="pn-dot"></span></div>
-  <div class="pn-item" data-i="1"><span class="pn-label">SERVICES</span><span class="pn-dot"></span></div>
-  <div class="pn-item" data-i="2"><span class="pn-label">ABOUT</span><span class="pn-dot"></span></div>
-  <div class="pn-item" data-i="3"><span class="pn-label">WORKS</span><span class="pn-dot"></span></div>
-  <div class="pn-item" data-i="4"><span class="pn-label">CONTACT</span><span class="pn-dot"></span></div>
-</div>
+<!-- 頁面容器:同一時間只顯示一個 view,只有 Home 跟 About 是合併在一起的同一頁,
+     其他(Services / Works / Contact)都要靠右上導覽點擊才會切換過去 -->
+<main id="app">
 
-<div id="swipe-hint">← 滑動滾輪或點右側頁籤切換頁面 →</div>
+<div class="view active" id="view-home">
+<!-- Section: Home -->
+<section id="home" class="section hero-section">
+  <div class="block" style="width:1px; height:32vh; background:var(--line); right:16vw; top:16vh;"></div>
+  <div class="block" style="width:9px; height:9px; border-radius:50%; background:var(--gold); right:14.6vw; top:15.4vh;"></div>
+  <div class="block" style="width:9px; height:9px; border-radius:50%; background:var(--blue); right:14.6vw; top:47vh;"></div>
+  <div class="section-inner hero-grid">
+    <div>
+      <div class="eyebrow">Jayran Studio / 內容行銷一條龍</div>
+      <h1 style="margin-top:14px;">拍攝、剪輯、企劃<br><span class="hl">一條龍完成</span>你的內容行銷</h1>
+      <p class="sub">兩人團隊,直接溝通不繞路。從腳本發想到成片交付,你只需要一個窗口。</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-cta" onclick="window.openContactModal(); return false;">預約免費諮詢</a>
+        <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="btn-ghost">加 LINE 直接聊 →</a>
+      </div>
+      <div class="stat-row">
+        <div><div class="n" data-target="100" data-suffix="+">0</div><div class="l">歷年影音作品</div></div>
+        <div><div class="n" data-target="2500" data-suffix="K+">0</div><div class="l">全網觀看流量</div></div>
+        <div><div class="n" data-target="5" data-suffix="+">0</div><div class="l">企業品牌合作</div></div>
+      </div>
+    </div>
+    <div class="hero-graphic">
+      <div class="hg-block hg-gold"></div>
+      <div class="hg-dots"></div>
+      <div class="hg-block hg-navy"></div>
+    </div>
+  </div>
+</section>
 
-<div id="slider">
+<!-- Section: About(從首頁直接往下滑就會接到,不再是獨立頁面)-->
+<section id="about" class="section about-section">
+  <div class="section-inner">
+    <div class="about-intro">
+      <div class="eyebrow">About Jayran</div>
+      <h2 style="font-size:clamp(24px,3vw,34px); margin-top:10px; line-height:1.5; color:var(--ink);">我們一直相信「尋找共識」,<br>是邁向卓越的基礎。</h2>
+      <p class="note">杰冉影像是一間專注在「有效溝通」的內容公司。我們不做廣告投放與成效優化,而是把每一支影片、每一份圖文,都當成品牌與觀眾對話的機會 —— 從企劃到成片,陪你把話說對。</p>
+      <div class="team-strip"><strong>兩人團隊,直接溝通</strong><p>沒有業務轉接、沒有多層對接窗口。從第一次諮詢到成片交付,你面對的都是實際執行的人。</p></div>
+    </div>
 
-  <!-- Panel 0: Home -->
-  <section class="panel hero">
-    <div class="block" style="width:1px; height:38vh; background:var(--line); right:16vw; top:12vh;"></div>
-    <div class="block" style="width:9px; height:9px; border-radius:50%; background:var(--gold); right:14.6vw; top:11.4vh;"></div>
-    <div class="block" style="width:9px; height:9px; border-radius:50%; background:var(--blue); right:14.6vw; top:49vh;"></div>
-    <div class="panel-inner" style="display:grid; grid-template-columns:1.15fr 0.85fr; gap:30px; align-items:center;">
+    <div id="about-slides"><!-- 由JS動態產生,預設值見下方script --></div>
+  </div>
+</section>
+</div><!-- /view-home -->
+
+<div class="view" id="view-services">
+<!-- Section: Services -->
+<section id="services" class="section services-section">
+  <div class="section-inner">
+    <div class="page-hero">
+      <h1 class="ph-title">服務項目</h1>
+      <p class="ph-sub">拍攝、剪輯、企劃 —— 一條龍完成你的內容行銷</p>
+    </div>
+    <div class="eyebrow">Our Services</div>
+
+    <div class="service-featured" data-key="planning">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>
       <div>
-        <div class="eyebrow">Jayran Studio / 內容行銷一條龍</div>
-        <h1 style="margin-top:14px;">拍攝、剪輯、企劃<br><span class="hl">一條龍完成</span>你的內容行銷</h1>
-        <p class="sub">兩人團隊,直接溝通不繞路。從腳本發想到成片交付,你只需要一個窗口。</p>
-        <div class="hero-actions">
-          <a href="#" class="btn-cta go-to" data-i="4">預約免費諮詢</a>
-          <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="btn-ghost">加 LINE 直接聊 →</a>
-        </div>
-        <div class="stat-row">
-          <div><div class="n">100+</div><div class="l">歷年影音作品</div></div>
-          <div><div class="n">2500K+</div><div class="l">全網觀看流量</div></div>
-          <div><div class="n">5+</div><div class="l">企業品牌合作</div></div>
-        </div>
+        <span class="sf-badge">主推服務</span>
+        <h3>企劃發想</h3>
+        <p>每個專案的起點。我們先花時間搞懂你的產品與客群,把想法轉成看得懂、記得住的內容架構,再帶著清楚方向進入拍攝、剪輯與交付。</p>
       </div>
-      <div></div>
+      <span class="more">了解一條龍合作流程 →</span>
     </div>
-  </section>
 
-  <!-- Panel 1: Services -->
-  <section class="panel">
-    <div class="panel-inner">
-      <div class="eyebrow">Our Services</div>
-      <h2 style="font-size:clamp(24px,3vw,34px); margin:10px 0 18px;">內容行銷,一條龍服務</h2>
-      <div style="font-size:12px; font-weight:700; color:var(--blue); letter-spacing:0.06em; margin-bottom:10px;">▸ 一條龍合作流程</div>
-      <div class="process-row">
-        <div class="p-step"><div class="num">01</div><h4>企劃發想</h4><p>釐清溝通目標</p></div>
-        <div class="p-step"><div class="num">02</div><h4>拍攝</h4><p>專業團隊執行</p></div>
-        <div class="p-step"><div class="num">03</div><h4>剪輯/設計</h4><p>剪輯或平面製作</p></div>
-        <div class="p-step"><div class="num">04</div><h4>交付</h4><p>單一窗口溝通</p></div>
+    <div class="service-grid">
+      <div class="service-card" data-key="video">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="1"/><path d="M16 10l6-3v10l-6-3"/></svg>
+        <h3>影音製作</h3><p>專業拍攝、短影音／長片剪輯</p>
+        <span class="more">了解詳情 →</span>
       </div>
-      <div class="service-grid">
-        <div class="service-card">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>
-          <h3>企劃發想</h3><p>品牌故事梳理、內容腳本規劃</p>
-        </div>
-        <div class="service-card">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="1"/><path d="M16 10l6-3v10l-6-3"/></svg>
-          <h3>影音製作</h3><p>專業拍攝、短影音／長片剪輯</p>
-        </div>
-        <div class="service-card">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M4 20 12 4l8 16"/><path d="M8 14h8"/></svg>
-          <h3>2D/MG 動畫</h3><p>動畫製作、IP 角色設計</p>
-        </div>
-        <div class="service-card">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>
-          <h3>平面設計</h3><p>Banner、Landing Page、EDM</p>
-        </div>
+      <div class="service-card" data-key="animation">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M4 20 12 4l8 16"/><path d="M8 14h8"/></svg>
+        <h3>2D/MG 動畫</h3><p>動畫製作、IP 角色設計</p>
+        <span class="more">了解詳情 →</span>
+      </div>
+      <div class="service-card" data-key="design">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>
+        <h3>平面設計</h3><p>Banner、Landing Page、EDM</p>
+        <span class="more">了解詳情 →</span>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+</div><!-- /view-services -->
 
-  <!-- Panel 2: About -->
-  <section class="panel about-panel">
-    <div class="about-scroll" id="about-scroll">
-      <div class="about-intro">
-        <div class="eyebrow">About Jayran</div>
-        <h2 style="font-size:clamp(24px,3vw,34px); margin-top:10px; line-height:1.5; color:var(--ink);">我們一直相信「尋找共識」,<br>是邁向卓越的基礎。</h2>
-        <p class="note">杰冉影像是一間專注在「有效溝通」的內容公司。我們不做廣告投放與成效優化,而是把每一支影片、每一份圖文,都當成品牌與觀眾對話的機會 —— 從企劃到成片,陪你把話說對。</p>
-        <div class="team-strip"><strong>兩人團隊,直接溝通</strong><p>沒有業務轉接、沒有多層對接窗口。從第一次諮詢到成片交付,你面對的都是實際執行的人。</p></div>
-      </div>
-
-      <div id="about-slides"><!-- 由JS動態產生,預設值見下方script --></div>
-
-      <div style="text-align:center; padding:50px 0 20px; font-size:11px; color:rgba(255,255,255,0.4);">↓ 往下捲動看更多</div>
+<div class="view" id="view-works">
+<!-- Section: Works -->
+<section id="works" class="section works-section">
+  <div class="section-inner">
+    <div class="page-hero">
+      <h1 class="ph-title">作品集</h1>
+      <p class="ph-sub">操作篩選器,看看我們從影音到圖文的每一次產出</p>
     </div>
-  </section>
-
-  <!-- Panel 3: Works -->
-  <section class="panel">
-    <div class="panel-inner">
-      <div class="eyebrow">Selected Works</div>
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin:10px 0 18px; flex-wrap:wrap; gap:12px;">
-        <h2 style="font-size:clamp(24px,3vw,34px);">作品集</h2>
-        <div class="work-filters">
-          <button class="filter-btn active" data-cat="video">影音</button>
-          <button class="filter-btn" data-cat="animation">動畫</button>
-          <button class="filter-btn" data-cat="graphic">圖文</button>
-        </div>
-      </div>
-      <div class="work-grid" id="work-grid"><div class="work-loading">資料載入中...</div></div>
-    </div>
-  </section>
-
-  <!-- Panel 4: Contact -->
-  <section class="panel">
-    <div class="panel-inner contact-grid">
-      <div class="contact-left">
-        <div class="eyebrow">Contact Us</div>
-        <h2 style="font-size:clamp(26px,3.6vw,38px); margin-top:10px; line-height:1.35;">聊聊你的<br>下一支內容</h2>
-        <p style="margin-top:14px; max-width:380px; font-size:13px; color:#4A5468;">留下需求,我們會在 1–2 個工作天內回覆。</p>
-        <div class="info-list">
-          <div class="info-item"><div class="lbl">工作室地址</div><div class="val">台南市永康區復華三街56號2F</div></div>
-          <div class="info-item"><div class="lbl">聯絡信箱</div><div class="val">jayran.tn@gmail.com</div></div>
-          <div class="info-item">
-            <div class="lbl">LINE 官方帳號</div>
-            <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="line-cta">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5c-5.1 0-9.25 3.36-9.25 7.5 0 3.7 3.32 6.8 7.8 7.4.3.06.72.2.83.46.09.24.06.6.03.85l-.14.85c-.04.24-.2.94.82.51 1.03-.42 5.55-3.27 7.57-5.6 1.4-1.53 2.09-3.08 2.09-4.47 0-4.14-4.15-7.5-9.25-7.5Z" fill="#fff"/></svg>
-              加入 LINE 好友,最快回覆 →
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="form-panel">
-        <div class="field"><label>公司 / 品牌名稱</label><input type="text"></div>
-        <div class="field"><label>姓名 / 聯絡人</label><input type="text"></div>
-        <div class="field"><label>聯絡信箱</label><input type="email"></div>
-        <div class="field"><label>洽詢業務</label><select><option>企劃+拍攝+剪輯(一條龍)</option><option>影片剪輯</option><option>MG動畫製作</option><option>平面/圖文設計</option></select></div>
-        <div class="field"><label>專案描述</label><textarea></textarea></div>
-        <button class="submit-btn">送出諮詢</button>
+    <div style="display:flex; justify-content:center; margin-bottom:26px;">
+      <div class="work-filters">
+        <button class="filter-btn active" data-cat="video">影音</button>
+        <button class="filter-btn" data-cat="animation">動畫</button>
+        <button class="filter-btn" data-cat="graphic">圖文</button>
       </div>
     </div>
-  </section>
+    <div class="work-grid" id="work-grid"><div class="work-loading">資料載入中...</div></div>
+  </div>
+</section>
+</div><!-- /view-works -->
 
+</main>
+
+<footer>© 2026 Jayran Studio 杰冉影像. All rights reserved.</footer>
+
+<div id="lightbox">
+  <button class="lb-close" onclick="document.getElementById('lightbox').classList.remove('open')">✕</button>
+  <img id="lightbox-img" src="" alt="">
 </div>
 
 <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="float-cta">
@@ -342,26 +410,60 @@
   LINE 線上諮詢
 </a>
 
-<div id="lightbox">
-  <button class="lb-close" onclick="document.getElementById('lightbox').classList.remove('open')">&times;</button>
-  <img id="lightbox-img" src="" alt="">
+<!-- 服務詳細頁 overlay:點服務卡片會從下方滑上來,內容之後可從後台編輯。
+     點內容以外的空白背景即可關閉,不用特地點右上角的返回鈕 -->
+<div id="service-detail" onclick="if(event.target.id === 'service-detail') closeServiceDetail()">
+  <button class="sd-close" onclick="closeServiceDetail()">✕ 返回</button>
+  <div class="sd-inner" id="sd-inner"></div>
+</div>
+
+<!-- 聯絡我們:不再是獨立頁面,改成點「預約免費諮詢」浮出的懸浮視窗,點空白背景或 ESC 都能關閉 -->
+<div id="contact-modal" onclick="if(event.target.id === 'contact-modal') closeContactModal()">
+  <button class="sd-close" onclick="closeContactModal()">✕ 返回</button>
+  <div class="cm-inner">
+    <div class="cm-left">
+      <svg class="cm-icon" viewBox="0 0 24 24" fill="none"><path d="m3 11 18-7-7 18-3-8-8-3Z" fill="#F5B400"/></svg>
+      <h2 class="cm-title">聯絡我們</h2>
+      <p class="cm-desc">聊聊你的下一支內容,我們會在 1–2 個工作天內回覆。</p>
+      <div class="cm-info">
+        <div class="cm-info-item"><div class="lbl">工作室地址</div><div class="val">台南市永康區復華三街56號2F</div></div>
+        <div class="cm-info-item"><div class="lbl">聯絡信箱</div><div class="val">jayran.tn@gmail.com</div></div>
+        <div class="cm-info-item">
+          <div class="lbl">LINE 官方帳號</div>
+          <a href="https://lin.ee/ski6rKN" target="_blank" rel="noopener" class="line-cta">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5c-5.1 0-9.25 3.36-9.25 7.5 0 3.7 3.32 6.8 7.8 7.4.3.06.72.2.83.46.09.24.06.6.03.85l-.14.85c-.04.24-.2.94.82.51 1.03-.42 5.55-3.27 7.57-5.6 1.4-1.53 2.09-3.08 2.09-4.47 0-4.14-4.15-7.5-9.25-7.5Z" fill="#fff"/></svg>
+            加入 LINE 好友,最快回覆 →
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="form-panel cm-form">
+      <div class="field"><label>公司 / 品牌名稱</label><input type="text"></div>
+      <div class="field"><label>姓名 / 聯絡人</label><input type="text"></div>
+      <div class="field"><label>聯絡信箱</label><input type="email"></div>
+      <div class="field"><label>洽詢業務</label><select><option>企劃+拍攝+剪輯(一條龍)</option><option>影片剪輯</option><option>MG動畫製作</option><option>平面/圖文設計</option></select></div>
+      <div class="field"><label>專案描述</label><textarea></textarea></div>
+      <button class="submit-btn">送出諮詢</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyCoNzrgrTgJONJZa4XgZn8K6fuwDqJBvLU",
-    authDomain: "jayran-portfolio.firebaseapp.com",
-    projectId: "jayran-portfolio",
-    storageBucket: "jayran-portfolio.firebasestorage.app",
+    apiKey: "AIzaSyDDb6NHm1u3zdIhoJvW3rQoc9x9DHR-XZ8",
+    authDomain: "jayran-studio.firebaseapp.com",
+    projectId: "jayran-studio",
+    storageBucket: "jayran-studio.firebasestorage.app",
     messagingSenderId: "304873552635",
     appId: "1:304873552635:web:76a697004d834182924e5e"
   };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  /* ================= 作品集 ================= */
   let allWorks = [];
   let currentCat = 'video';
   const grid = document.getElementById('work-grid');
@@ -376,6 +478,7 @@
   });
 
   function render(){
+    grid.classList.toggle('cat-graphic', currentCat === 'graphic');
     const items = allWorks.filter(w => w.category === currentCat);
     grid.innerHTML = items.length === 0 ? `<div class="work-empty">這個分類目前尚無作品。</div>` : items.map(buildCard).join('');
   }
@@ -404,7 +507,7 @@
     });
   });
 
-  // ---- About 頁:插畫標語(預設值,之後可從 jayran_settings/frontend.aboutSlides 覆寫) ----
+  /* ================= About:插畫標語(捲到哪、動畫跑到哪)================= */
   const defaultAboutSlides = [
     {
       cn: '不將就,反覆打磨',
@@ -437,85 +540,202 @@
           <div class="tagline-en">${s.en}</div>
         </div>
       </div>`).join('');
-    checkAboutReveal();
+    document.querySelectorAll('.about-slide').forEach(s => aboutObserver.observe(s));
   }
 
-  // 手動計算捲動位置來觸發浮現動畫,不依賴 IntersectionObserver
-  // (因為 About 面板平常被橫向 slider 移到畫面外,root 被裁切時 IO 抓不到交集,切頁過去反而不會觸發)
-  function checkAboutReveal(){
-    const scroller = document.getElementById('about-scroll');
-    if(!scroller) return;
-    const scRect = scroller.getBoundingClientRect();
-    document.querySelectorAll('.about-slide').forEach(s => {
-      const r = s.getBoundingClientRect();
-      if(r.top < scRect.top + scRect.height * 0.85 && r.bottom > scRect.top){
-        s.classList.add('in-view');
-      }
-    });
-  }
-  document.getElementById('about-scroll').addEventListener('scroll', checkAboutReveal, { passive:true });
-  window.addEventListener('resize', checkAboutReveal);
+  // 正常頁面捲動,直接用 IntersectionObserver 偵測進入視窗,捲到哪動畫就跑到哪
+  const aboutObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in-view'); aboutObserver.unobserve(e.target); } });
+  }, { threshold: 0.25 });
+
   renderAboutSlides(defaultAboutSlides);
 
-  // 若後台(admin.html)之後把 aboutSlides 陣列寫進 jayran_settings/frontend,這裡會自動改用真實文字
-  import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js").then(({ doc, onSnapshot: onSnap }) => {
-    onSnap(doc(db, "jayran_settings", "frontend"), (docSnap) => {
-      const data = docSnap.data();
-      if(data && Array.isArray(data.aboutSlides) && data.aboutSlides.length > 0){
-        renderAboutSlides(data.aboutSlides);
+  /* ================= 服務詳細頁(預設內容,之後可從後台 jayran_settings/frontend.serviceDetails 覆寫)================= */
+  let serviceDetails = {
+    planning: {
+      en: 'Creative Planning', cn: '企劃發想',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>`,
+      desc: '好內容從企劃開始。這是我們一條龍合作的起點——先花時間搞懂你的產品與客群,把想法轉成看得懂、記得住的內容架構,再帶著清楚的方向進入拍攝、剪輯與交付。',
+      features: [
+        { t:'01 企劃發想', d:'釐清溝通目標,梳理品牌故事與內容腳本規劃。' },
+        { t:'02 拍攝', d:'專業團隊執行,現場燈光構圖與收音一次到位。' },
+        { t:'03 剪輯 / 設計', d:'依內容屬性進行剪輯或平面製作,統一調性與品牌識別。' },
+        { t:'04 交付', d:'單一窗口溝通,成片與素材一次到位,不轉包、不斷線。' }
+      ]
+    },
+    video: {
+      en: 'Video Production', cn: '影音製作',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="1"/><path d="M16 10l6-3v10l-6-3"/></svg>`,
+      desc: '從腳本到成片,我們用兩人團隊完整掌控每一個環節 —— 拍攝、剪輯、調色、字幕,一次到位,不轉包、不失真。',
+      features: [
+        { t:'專業拍攝', d:'現場團隊執行,燈光構圖與收音一次到位。' },
+        { t:'短影音剪輯', d:'為 IG / FB / YouTube Shorts 優化的節奏與字卡設計。' },
+        { t:'長片剪輯', d:'品牌影片、活動紀錄、訪談影片完整後製。' },
+        { t:'調光調色', d:'統一影片色調,強化品牌識別與質感。' }
+      ]
+    },
+    animation: {
+      en: 'Motion Graphics', cn: '2D / MG 動畫',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="1.6"><path d="M4 20 12 4l8 16"/><path d="M8 14h8"/></svg>`,
+      desc: '用動畫把複雜的概念說清楚。無論是產品說明、品牌 IP 角色,還是資訊圖表動畫,我們都能量身打造。',
+      features: [
+        { t:'MG 動畫製作', d:'產品介紹、流程說明、數據視覺化動畫。' },
+        { t:'IP 角色設計', d:'打造專屬品牌吉祥物與角色形象。' },
+        { t:'分鏡與腳本', d:'動畫前期規劃,確保節奏與訊息清楚。' },
+        { t:'音效與配樂', d:'搭配合適音樂與音效,提升觀看體驗。' }
+      ]
+    },
+    design: {
+      en: 'Graphic Design', cn: '平面設計',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>`,
+      desc: '從活動 Banner 到 EDM 電子報,我們用一致的視覺語言,讓品牌在每個接觸點都被記住。',
+      features: [
+        { t:'Banner / 版位設計', d:'電商活動版位、社群貼文視覺設計。' },
+        { t:'Landing Page 設計', d:'高轉換導向的活動頁面視覺規劃。' },
+        { t:'EDM 電子報', d:'定期電子報版面設計與排版。' },
+        { t:'品牌視覺延伸', d:'延伸品牌識別至各種行銷素材。' }
+      ]
+    }
+  };
+
+  function openServiceDetail(key){
+    const d = serviceDetails[key];
+    if(!d) return;
+    const featHtml = d.features.map((f, i) => `
+      <div class="sd-feat">
+        <div class="sd-num">0${i+1}</div>
+        <div><h4>${f.t}</h4><p>${f.d}</p></div>
+      </div>`).join('');
+    document.getElementById('sd-inner').innerHTML = `
+      <div class="sd-icon">${d.icon}</div>
+      <div class="sd-eyebrow">${d.en}</div>
+      <div class="sd-title">${d.cn}</div>
+      <div class="sd-divider"></div>
+      <p class="sd-desc">${d.desc}</p>
+      <div class="sd-sub-eyebrow">服務內容</div>
+      <div class="sd-grid">${featHtml}</div>
+      <a href="#" class="btn-cta sd-cta" onclick="closeServiceDetail(); window.openContactModal(); return false;">洽詢這項服務</a>
+    `;
+    document.getElementById('service-detail').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  window.closeServiceDetail = function(){
+    document.getElementById('service-detail').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.openContactModal = function(){
+    document.getElementById('contact-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeContactModal = function(){
+    document.getElementById('contact-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      window.closeServiceDetail();
+      window.closeContactModal();
+    }
+  });
+  document.querySelectorAll('.service-card, .service-featured').forEach(card => {
+    card.addEventListener('click', () => openServiceDetail(card.dataset.key));
+  });
+
+  // 若後台之後把 aboutSlides / serviceDetails 寫進 jayran_settings/frontend,這裡會自動改用真實內容
+  onSnapshot(doc(db, "jayran_settings", "frontend"), (docSnap) => {
+    const data = docSnap.data();
+    if(data && Array.isArray(data.aboutSlides) && data.aboutSlides.length > 0){
+      renderAboutSlides(data.aboutSlides);
+    }
+    if(data && data.serviceDetails && typeof data.serviceDetails === 'object'){
+      serviceDetails = Object.assign({}, serviceDetails, data.serviceDetails);
+    }
+  });
+
+  /* ================= 首頁數字:滾動到視野內才從 0 跑到目標值 ================= */
+  function animateCount(el){
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const dur = 1400;
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = Math.round(target * eased);
+      el.textContent = val.toLocaleString('en-US') + suffix;
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const statObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.n[data-target]').forEach(animateCount);
+        obs.unobserve(e.target);
       }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.stat-row').forEach(row => statObserver.observe(row));
+
+  /* ================= 導覽:分頁切換 =================
+     只有 HOME 跟 ABOUT 是同一頁(#view-home 裡面上下捲動),
+     SERVICES / WORKS 各自是獨立的頁面,只能靠右上導覽點擊才會切換過去;
+     CONTACT 不再是頁面,改成點「預約免費諮詢」浮出 #contact-modal 懸浮視窗。 */
+  const pnItems = document.querySelectorAll('.pn-item');
+  const views = document.querySelectorAll('.view');
+
+  function idToView(id){ return (id === 'about') ? 'home' : id; }
+
+  // 大標題進場:平滑淡入 + 往上滑出(不用打字機效果)
+  function revealPageHero(activeView){
+    const title = activeView?.querySelector('.ph-title');
+    const sub = activeView?.querySelector('.ph-sub');
+    if(!title) return;
+    title.classList.remove('in');
+    if(sub) sub.classList.remove('in');
+    void title.offsetWidth; // 強制重繪,確保動畫每次切頁都會重新觸發
+    requestAnimationFrame(() => {
+      title.classList.add('in');
+      if(sub) sub.classList.add('in');
+    });
+  }
+
+  function showView(viewName){
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + viewName));
+    revealPageHero(document.getElementById('view-' + viewName));
+  }
+
+  function goToNav(id){
+    const viewName = idToView(id);
+    const wasActive = document.getElementById('view-' + viewName)?.classList.contains('active');
+    showView(viewName);
+    updateActiveNav();
+    requestAnimationFrame(() => {
+      if(id === 'about'){
+        document.getElementById('about')?.scrollIntoView({ behavior: wasActive ? 'smooth' : 'auto', block:'start' });
+      } else {
+        window.scrollTo({ top:0, behavior: wasActive ? 'smooth' : 'auto' });
+      }
+    });
+  }
+  window.goToNav = goToNav;
+
+  document.querySelectorAll('.go-to, .pn-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const id = el.dataset.id;
+      if(!id) return;
+      e.preventDefault();
+      goToNav(id);
     });
   });
 
-  const slider = document.getElementById('slider');
-  const panels = document.querySelectorAll('.panel');
-  const pnItems = document.querySelectorAll('.pn-item');
-  let current = 0;
-  const total = panels.length;
-  let locking = false;
-
-  function goTo(i){
-    current = Math.max(0, Math.min(total - 1, i));
-    slider.style.transform = `translateX(-${current * 100}vw)`;
-    pnItems.forEach((el, idx) => el.classList.toggle('active', idx === current));
-    if(current === 2){
-      checkAboutReveal();
-      setTimeout(checkAboutReveal, 720); // 橫向切頁動畫(.7s)結束後再確認一次
-    }
+  // 導覽高亮:目前是哪個 view(ABOUT 已併入 HOME,不再需要細分)
+  function updateActiveNav(){
+    const activeView = document.querySelector('.view.active')?.id.replace('view-', '');
+    pnItems.forEach(el => el.classList.toggle('active', el.dataset.id === activeView));
   }
-
-  pnItems.forEach(el => el.addEventListener('click', () => goTo(parseInt(el.dataset.i))));
-  document.querySelectorAll('.go-to').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); goTo(parseInt(el.dataset.i)); }));
-
-  window.addEventListener('wheel', (e) => {
-    if(locking) return;
-    if(Math.abs(e.deltaY) < 15 && Math.abs(e.deltaX) < 15) return;
-    const dir = (e.deltaY + e.deltaX) > 0 ? 1 : -1;
-
-    // About 頁(index 2)內部有自己的捲軸,先讓它捲完再換頁
-    if(current === 2){
-      const sc = document.getElementById('about-scroll');
-      const atTop = sc.scrollTop <= 2;
-      const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2;
-      if((dir > 0 && !atBottom) || (dir < 0 && !atTop)) return; // 交給內部捲軸自己處理
-    }
-
-    locking = true;
-    goTo(current + dir);
-    setTimeout(() => locking = false, 650);
-  }, { passive:true });
-
-  window.addEventListener('keydown', (e) => {
-    if(e.key === 'ArrowRight') goTo(current + 1);
-    if(e.key === 'ArrowLeft') goTo(current - 1);
-  });
-
-  let touchStartX = 0;
-  window.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive:true });
-  window.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if(Math.abs(dx) > 60) goTo(current + (dx < 0 ? 1 : -1));
-  }, { passive:true });
+  window.addEventListener('scroll', updateActiveNav, { passive:true });
+  updateActiveNav();
 </script>
 
 </body>
