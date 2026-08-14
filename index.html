@@ -25,6 +25,7 @@
   img,svg{max-width:100%; display:block;}
   .eyebrow{font-family:'Poppins',sans-serif; font-size:11px; font-weight:500; color:var(--blue); letter-spacing:0.14em; text-transform:uppercase;}
   section[id]{scroll-margin-top:92px;}
+  .about-slide[id]{scroll-margin-top:110px;}
 
   /* ---------- Header(固定頂部,不再用橫向滾輪切頁)---------- */
   header{position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:18px 36px; background:rgba(245,245,243,0.88); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
@@ -61,20 +62,20 @@
   .btn-ghost:hover::before{transform:scaleX(1);}
 
   /* ---------- 版面基礎(改為正常上下捲動,不再是整頁橫向切換)---------- */
-  .section{padding:100px 90px; position:relative; overflow:hidden;}
-  .section-inner{max-width:1140px; margin:0 auto; width:100%; position:relative; z-index:2;}
+  .section{padding:150px 100px; position:relative; overflow:hidden;}
+  .section-inner{max-width:1160px; margin:0 auto; width:100%; position:relative; z-index:2;}
 
   /* 每個獨立頁面進去先展示大標題(打字動畫),再接內容,呼應簡訊設計的做法 */
-  .page-hero{text-align:center; max-width:760px; margin:0 auto 64px;}
-  .page-hero .ph-title{font-size:clamp(34px,5.2vw,58px); font-weight:700; color:var(--ink); opacity:0; transform:translateY(30px); transition:opacity .7s cubic-bezier(.22,.8,.32,1), transform .7s cubic-bezier(.22,.8,.32,1);}
+  .page-hero{text-align:center; max-width:760px; margin:0 auto 84px;}
+  .page-hero .ph-title{font-size:clamp(38px,6vw,68px); font-weight:700; letter-spacing:-0.02em; color:var(--ink); opacity:0; transform:translateY(30px); transition:opacity .7s cubic-bezier(.22,.8,.32,1), transform .7s cubic-bezier(.22,.8,.32,1);}
   .page-hero .ph-title.in{opacity:1; transform:translateY(0);}
-  .page-hero .ph-sub{margin-top:18px; font-size:15px; color:#6B7385; font-weight:300; opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.22,.8,.32,1) .12s, transform .7s cubic-bezier(.22,.8,.32,1) .12s;}
+  .page-hero .ph-sub{margin-top:22px; font-size:14px; color:#8A93A6; font-weight:300; letter-spacing:0.01em; opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.22,.8,.32,1) .12s, transform .7s cubic-bezier(.22,.8,.32,1) .12s;}
   .page-hero .ph-sub.in{opacity:1; transform:translateY(0);}
   @media(max-width:760px){ .section{padding:80px 24px;} }
 
   /* Services / Works / Contact 現在是各自獨立的頁面,只能靠右上導覽點擊切換過去,
      不會跟著首頁一起被捲動到,所以需要自己的頂部留白來閃避固定 header */
-  .services-section,.works-section,.contact-section{min-height:100vh; padding-top:150px;}
+  .services-section,.works-section,.contact-section{min-height:100vh; padding-top:160px;}
 
   /* 頁面切換容器:同一時間只顯示一個 view */
   .view{display:none;}
@@ -84,27 +85,69 @@
   .block{position:absolute; z-index:0;}
 
   /* ---------- Hero ---------- */
-  .hero-section{padding:168px 90px 100px; min-height:92vh; display:flex; align-items:center;}
-  .hero-grid{display:grid; grid-template-columns:1.15fr 0.85fr; gap:30px; align-items:center; width:100%;}
-  .hero h1{font-size:clamp(30px,4.4vw,54px); line-height:1.4; color:var(--ink); font-weight:700;}
+  .hero-section{padding:172px 100px 110px; min-height:92vh; display:flex; align-items:center;}
+  .hero-grid{display:grid; grid-template-columns:1.15fr 0.85fr; gap:40px; align-items:center; width:100%;}
+  .hero h1{font-size:clamp(32px,4.8vw,60px); line-height:1.28; letter-spacing:-0.015em; color:var(--ink); font-weight:700;}
   .hero h1 .hl{color:var(--blue);}
-  .hero .sub{margin-top:22px; max-width:440px; font-size:15px; color:#6B7385; font-weight:300; line-height:1.9;}
-  .hero-actions{display:flex; gap:16px; margin-top:36px; flex-wrap:wrap;}
+  .hero .sub{margin-top:26px; max-width:420px; font-size:14px; color:#8A93A6; font-weight:300; line-height:1.9;}
+  .hero-actions{display:flex; gap:16px; margin-top:40px; flex-wrap:wrap;}
 
-  .stat-row{display:flex; gap:56px; margin-top:60px;}
+  .stat-row{display:flex; gap:64px; margin-top:70px;}
   .stat-row .n{font-family:'Poppins',sans-serif; font-size:26px; font-weight:600; color:var(--blue);}
   .stat-row .l{font-size:11px; color:#8A93A6; margin-top:4px; letter-spacing:0.06em; font-weight:300;}
 
+  /* Hero 裝飾:改成「作品預覽卡片堆疊」的構圖 — 深色時間軸卡片 + 白色數據卡片 + 金色播放卡片,
+     用層疊、旋轉、陰影做出真正的視覺深度,而不是兩塊純色矩形疊在一起 */
   .hero-graphic{position:relative; height:56vh; max-height:420px;}
-  .hg-block{position:absolute; border-radius:4px;}
-  .hg-navy{width:76%; height:86%; right:0; top:7%; z-index:2; background:linear-gradient(150deg,#33456f 0%,var(--blue) 45%,#182645 100%); box-shadow:0 30px 60px rgba(23,63,140,0.22);}
-  .hg-gold{width:44%; height:42%; left:0; bottom:-4%; z-index:1; background:var(--gold); box-shadow:0 20px 40px rgba(245,185,66,0.28);}
-  .hg-dots{position:absolute; width:130px; height:130px; right:-14px; top:-18px; z-index:0; background-image:radial-gradient(var(--ink) 1.6px, transparent 1.6px); background-size:16px 16px; opacity:.16;}
+  .hg-card{position:absolute; border-radius:12px; overflow:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1);}
+  .hero-graphic:hover .hg-card-back{transform:rotate(-7deg) translateY(-4px);}
+  .hero-graphic:hover .hg-card-mid{transform:rotate(1deg) translateY(-6px);}
+  .hero-graphic:hover .hg-card-front{transform:rotate(-6deg) translateY(-10px);}
+
+  .hg-card-back{
+    width:72%; height:80%; right:0; top:2%; z-index:1;
+    background:linear-gradient(150deg,#33456f 0%, var(--blue) 55%, #16244a 100%);
+    box-shadow:0 30px 60px rgba(23,63,140,0.24);
+    transform:rotate(-5deg);
+  }
+  .hg-card-back .hg-lines{position:absolute; inset:0; background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.055) 0 2px, transparent 2px 22px);}
+  .hg-card-back .hg-tag{position:absolute; left:24px; bottom:24px; font-family:'Poppins',sans-serif; font-size:11px; letter-spacing:0.12em; color:rgba(255,255,255,0.55); text-transform:uppercase;}
+
+  .hg-card-mid{
+    width:60%; height:60%; left:0; bottom:2%; z-index:2;
+    background:#fff; padding:24px 26px;
+    box-shadow:0 24px 50px rgba(23,63,140,0.16);
+    transform:rotate(2deg);
+  }
+  .hg-dotgrid{width:64px; height:14px; background-image:radial-gradient(var(--line) 1.5px, transparent 1.5px); background-size:8px 8px;}
+  .hg-bars{display:flex; align-items:flex-end; gap:9px; height:64%; margin-top:22px;}
+  .hg-bars span{flex:1; border-radius:3px 3px 0 0; background:var(--blue);}
+  .hg-bars span:nth-child(2),.hg-bars span:nth-child(4){background:var(--gold);}
+  .hg-bars span:nth-child(1){height:38%;} .hg-bars span:nth-child(2){height:78%;}
+  .hg-bars span:nth-child(3){height:54%;} .hg-bars span:nth-child(4){height:92%;} .hg-bars span:nth-child(5){height:64%;}
+
+  .hg-card-front{
+    width:36%; height:36%; right:2%; bottom:-2%; z-index:3;
+    background:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 20px 40px rgba(245,180,0,0.32);
+    transform:rotate(-3deg);
+  }
+  .hg-play{width:44%; height:44%;}
 
   /* ---------- About:直接接在首頁下方,滑到哪動畫跑到哪 ---------- */
   .about-section{background:var(--paper);}
-  .about-intro{max-width:600px; margin:0 auto 70px;}
+  .about-intro{max-width:920px; margin:0 auto 90px; display:grid; grid-template-columns:170px 1fr; gap:54px; align-items:start;}
   .about-intro .note{margin-top:18px; font-size:14px; color:#6B7385; font-weight:300; line-height:1.9;}
+  /* 左側原本空一大塊,補上跟首頁Hero呼應的色塊裝飾,不是插畫 */
+  .ai-decor{position:relative; height:230px;}
+  .ai-decor-shape{position:absolute; border-radius:8px; transition:transform .5s cubic-bezier(.2,.8,.2,1);}
+  .ai-decor-navy{width:116px; height:148px; left:26px; top:6px; background:linear-gradient(150deg,#33456f 0%, var(--blue) 55%, #16244a 100%); box-shadow:0 22px 38px rgba(23,63,140,0.22); transform:rotate(-5deg); z-index:2;}
+  .ai-decor-gold{width:78px; height:78px; left:0; bottom:8px; background:var(--gold); box-shadow:0 16px 28px rgba(245,180,0,0.26); transform:rotate(4deg); z-index:1;}
+  .ai-decor-dots{position:absolute; width:74px; height:74px; right:0; top:-6px; z-index:0; background-image:radial-gradient(var(--ink) 1.4px, transparent 1.4px); background-size:12px 12px; opacity:.18;}
+  .about-intro:hover .ai-decor-navy{transform:rotate(-8deg) translateY(-4px);}
+  .about-intro:hover .ai-decor-gold{transform:rotate(7deg) translateY(3px);}
+  @media(max-width:760px){ .about-intro{grid-template-columns:1fr;} .ai-decor{display:none;} }
   .about-slide{
     max-width:1100px; margin:0 auto; padding:80px 0;
     display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;
@@ -120,15 +163,46 @@
   .team-strip{border-left:2px solid var(--gold); padding:18px 24px; margin-top:30px; max-width:420px;}
   .team-strip strong{display:block; font-size:15px; margin-bottom:6px; font-weight:600;}
   .team-strip p{font-size:13px; color:#6B7385; font-weight:300;}
+
+  /* 三個快速跳轉連結:摸到會用 SVG 描邊畫出一個實心圓,尾端自然減速停下,呼應簡訊設計的做法 */
+  .about-jump{display:flex; gap:6px; margin-top:46px; flex-wrap:wrap;}
+  .jump-link{
+    position:relative; display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+    width:168px; height:168px; padding:16px; text-align:center;
+    font-size:12.5px; font-weight:600; color:var(--blue); line-height:1.5; white-space:nowrap;
+    cursor:pointer; transition:color .3s ease;
+  }
+  .jump-link:hover{color:var(--ink);}
+  .jl-ring{position:absolute; inset:0; pointer-events:none; overflow:visible;}
+  .jl-ring circle{
+    fill:none; stroke:var(--gold); stroke-width:1.5; stroke-linecap:round;
+    stroke-dasharray:440; stroke-dashoffset:440;
+    transform:rotate(-90deg); transform-origin:84px 84px;
+    transition:stroke-dashoffset 1.15s cubic-bezier(.16,1,.3,1);
+  }
+  .jump-link:hover .jl-ring circle{stroke-dashoffset:0;}
+  .jump-link .arrow{display:block; margin-top:8px; color:var(--gold); font-size:14px; animation:jump-bounce 1.6s ease-in-out infinite;}
+  @keyframes jump-bounce{0%,100%{transform:translateY(0);} 50%{transform:translateY(4px);}}
   @media(max-width:860px){ .about-slide{grid-template-columns:1fr;} }
 
   /* ---------- Services ---------- */
 
   /* 服務項目卡片 — 現在可點擊進入詳細頁。企劃發想是主推項目,獨立一個大範圍;
-     其餘三項(影音製作/2D動畫/平面設計)自成一排小卡片 */
+     其餘三項(影音製作/2D動畫/平面設計)自成一排小卡片。編號做成大而獨立的裝飾數字 */
+  .sf-num{
+    flex-shrink:0; font-family:'Poppins',sans-serif; font-size:64px; font-weight:700; line-height:1;
+    color:var(--gold); opacity:0.55; transition:color .4s ease, opacity .4s ease;
+  }
+  .service-featured:hover .sf-num{color:#FFD866; opacity:0.9;}
+  .service-card{position:relative;}
+  .service-card .sc-num{
+    display:block; font-family:'Poppins',sans-serif; font-size:40px; font-weight:700; line-height:1;
+    color:var(--gold); opacity:0.55; margin-bottom:18px;
+  }
+
   .service-featured{
-    display:flex; align-items:center; gap:36px; cursor:pointer;
-    background:#fff; border:1px solid var(--line); border-radius:2px; padding:38px 44px; margin-bottom:26px;
+    display:flex; align-items:center; gap:32px; cursor:pointer;
+    background:#fff; border:1px solid var(--line); border-radius:2px; padding:38px 44px; margin:28px 0 26px;
     position:relative; overflow:hidden;
     transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease, background .55s cubic-bezier(.4,0,.2,1);
   }
@@ -140,10 +214,10 @@
     background:linear-gradient(135deg,#1c2c52 0%, var(--blue) 55%, #223464 100%);
   }
   .service-featured:hover::before{transform:scaleY(1);}
+  .service-featured .icon{width:48px; height:48px; flex-shrink:0; transition:transform .35s ease, filter .45s ease;}
+  .service-featured:hover .icon{transform:translateY(-3px) scale(1.08); filter:brightness(0) invert(1);}
   .service-featured .sf-badge{display:block; font-family:'Poppins',sans-serif; font-size:11px; font-weight:600; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:10px; transition:color .4s ease;}
   .service-featured:hover .sf-badge{color:#FFD866;}
-  .service-featured .icon{width:50px; height:50px; flex-shrink:0; transition:transform .35s ease, filter .45s ease;}
-  .service-featured:hover .icon{transform:translateY(-3px) scale(1.08); filter:brightness(0) invert(1);}
   .service-featured h3{font-size:23px; font-weight:700; margin-bottom:10px; transition:color .4s ease;}
   .service-featured:hover h3{color:#fff;}
   .service-featured p{font-size:13.5px; color:#8A93A6; font-weight:300; line-height:1.85; max-width:480px; transition:color .4s ease;}
@@ -166,6 +240,12 @@
 
   /* ---------- Works ---------- */
   .work-filters{display:flex; gap:0;}
+  .work-toolbar{display:flex; align-items:center; justify-content:center; gap:22px; margin-bottom:30px; flex-wrap:wrap;}
+  .work-sort{display:flex; align-items:center; gap:10px;}
+  .sort-btn{background:none; border:none; cursor:pointer; font-size:12px; color:#8A93A6; padding:2px 0; font-family:'Noto Sans TC',sans-serif; transition:color .25s ease;}
+  .sort-btn:hover{color:var(--ink);}
+  .sort-btn.active{color:var(--blue); font-weight:700;}
+  .sort-divider{color:var(--line); font-size:12px;}
   .work-filters .filter-btn{background:var(--paper); border:1px solid var(--line); border-left:none; padding:9px 20px; font-size:12px; font-weight:400; cursor:pointer; color:var(--ink); transition:background .25s ease, color .25s ease, border-color .25s ease;}
   .work-filters .filter-btn:first-child{border-left:1px solid var(--line);}
   .work-filters .filter-btn:hover:not(.active){background:var(--ink); color:#fff; border-color:var(--ink);}
@@ -173,12 +253,12 @@
   .work-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
   .work-grid.cat-graphic{grid-template-columns:repeat(3,1fr); max-width:1140px; margin:0 auto;}
   .work-loading,.work-empty{grid-column:1/-1; text-align:center; padding:40px 0; color:#8A93A6; font-size:13px;}
-  .w-card{background:#fff; border:1px solid var(--line); overflow:hidden; cursor:pointer; transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;}
-  .w-card:hover{transform:translateY(-5px); box-shadow:0 16px 28px rgba(23,63,140,0.16); border-color:var(--blue);}
+  .w-card{background:#fff; border:1px solid var(--line); overflow:hidden; cursor:pointer; transition:box-shadow .35s ease;}
+  .w-card:hover{box-shadow:0 14px 26px rgba(23,63,140,0.12);}
   .w-media{aspect-ratio:9/16; background:#eee; overflow:hidden;}
   .work-grid.cat-graphic .w-media{aspect-ratio:16/9;}
   .w-media img,.w-media iframe{width:100%; height:100%; object-fit:cover; border:none; transition:transform .5s ease;}
-  .w-card:hover .w-media img{transform:scale(1.07);}
+  .w-card:hover .w-media img{transform:scale(1.035);}
   .w-body{padding:10px 12px;}
   .w-cat{font-size:9px; color:var(--blue); font-weight:700; letter-spacing:0.08em; text-transform:uppercase;}
   .w-title{font-size:13px; margin-top:4px; font-weight:700;}
@@ -315,9 +395,20 @@
       </div>
     </div>
     <div class="hero-graphic">
-      <div class="hg-block hg-gold"></div>
-      <div class="hg-dots"></div>
-      <div class="hg-block hg-navy"></div>
+      <div class="hg-card hg-card-back">
+        <div class="hg-lines"></div>
+        <div class="hg-tag">Video Timeline</div>
+      </div>
+      <div class="hg-card hg-card-mid">
+        <div class="hg-dotgrid"></div>
+        <div class="hg-bars"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="hg-card hg-card-front">
+        <svg class="hg-play" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.22)"/>
+          <path d="M10 8.2v7.6l6.4-3.8L10 8.2Z" fill="#173F8C"/>
+        </svg>
+      </div>
     </div>
   </div>
 </section>
@@ -326,10 +417,31 @@
 <section id="about" class="section about-section">
   <div class="section-inner">
     <div class="about-intro">
-      <div class="eyebrow">About Jayran</div>
-      <h2 style="font-size:clamp(24px,3vw,34px); margin-top:10px; line-height:1.5; color:var(--ink);">我們一直相信「尋找共識」,<br>是邁向卓越的基礎。</h2>
-      <p class="note">杰冉影像是一間專注在「有效溝通」的內容公司。我們不做廣告投放與成效優化,而是把每一支影片、每一份圖文,都當成品牌與觀眾對話的機會 —— 從企劃到成片,陪你把話說對。</p>
-      <div class="team-strip"><strong>兩人團隊,直接溝通</strong><p>沒有業務轉接、沒有多層對接窗口。從第一次諮詢到成片交付,你面對的都是實際執行的人。</p></div>
+      <div class="ai-decor">
+        <div class="ai-decor-dots"></div>
+        <div class="ai-decor-shape ai-decor-navy"></div>
+        <div class="ai-decor-shape ai-decor-gold"></div>
+      </div>
+      <div>
+        <div class="eyebrow">About Jayran</div>
+        <h2 style="font-size:clamp(24px,3vw,34px); margin-top:10px; line-height:1.5; color:var(--ink);">我們一直相信「尋找共識」,<br>是邁向卓越的基礎。</h2>
+        <p class="note">杰冉影像是一間專注在「有效溝通」的內容公司。我們不做廣告投放與成效優化,而是把每一支影片、每一份圖文,都當成品牌與觀眾對話的機會 —— 從企劃到成片,陪你把話說對。</p>
+        <div class="team-strip"><strong>兩人團隊,直接溝通</strong><p>沒有業務轉接、沒有多層對接窗口。從第一次諮詢到成片交付,你面對的都是實際執行的人。</p></div>
+        <div class="about-jump">
+          <a href="#about-jump-1" class="jump-link">
+            <svg class="jl-ring" viewBox="0 0 168 168"><circle cx="84" cy="84" r="70"/></svg>
+            <span>不將就,反覆打磨</span><span class="arrow">⌄</span>
+          </a>
+          <a href="#about-jump-2" class="jump-link">
+            <svg class="jl-ring" viewBox="0 0 168 168"><circle cx="84" cy="84" r="70"/></svg>
+            <span>找到溝通的共識</span><span class="arrow">⌄</span>
+          </a>
+          <a href="#about-jump-3" class="jump-link">
+            <svg class="jl-ring" viewBox="0 0 168 168"><circle cx="84" cy="84" r="70"/></svg>
+            <span>全程參與,不曾缺席</span><span class="arrow">⌄</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <div id="about-slides"><!-- 由JS動態產生,預設值見下方script --></div>
@@ -348,6 +460,7 @@
     <div class="eyebrow">Our Services</div>
 
     <div class="service-featured" data-key="planning">
+      <span class="sf-num">01</span>
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>
       <div>
         <span class="sf-badge">主推服務</span>
@@ -359,16 +472,19 @@
 
     <div class="service-grid">
       <div class="service-card" data-key="video">
+        <span class="sc-num">02</span>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="1"/><path d="M16 10l6-3v10l-6-3"/></svg>
         <h3>影音製作</h3><p>專業拍攝、短影音／長片剪輯</p>
         <span class="more">了解詳情 →</span>
       </div>
       <div class="service-card" data-key="animation">
+        <span class="sc-num">03</span>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><path d="M4 20 12 4l8 16"/><path d="M8 14h8"/></svg>
         <h3>2D/MG 動畫</h3><p>動畫製作、IP 角色設計</p>
         <span class="more">了解詳情 →</span>
       </div>
       <div class="service-card" data-key="design">
+        <span class="sc-num">04</span>
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#2E4374" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>
         <h3>平面設計</h3><p>Banner、Landing Page、EDM</p>
         <span class="more">了解詳情 →</span>
@@ -386,14 +502,19 @@
       <h1 class="ph-title">作品集</h1>
       <p class="ph-sub">操作篩選器,看看我們從影音到圖文的每一次產出</p>
     </div>
-    <div style="display:flex; justify-content:center; margin-bottom:26px;">
+    <div class="work-toolbar">
       <div class="work-filters">
         <button class="filter-btn active" data-cat="video">影音</button>
         <button class="filter-btn" data-cat="animation">動畫</button>
         <button class="filter-btn" data-cat="graphic">圖文</button>
       </div>
+      <div class="work-sort">
+        <button class="sort-btn active" data-sort="desc">新到舊</button>
+        <span class="sort-divider">|</span>
+        <button class="sort-btn" data-sort="asc">舊到新</button>
+      </div>
     </div>
-    <div class="work-grid" id="work-grid"><div class="work-loading">資料載入中...</div></div>
+    <div class="work-grid" id="work-grid"><div class="work-loading">作品集讀取中...</div></div>
   </div>
 </section>
 </div><!-- /view-works -->
@@ -468,6 +589,7 @@
   /* ================= 作品集 ================= */
   let allWorks = [];
   let currentCat = 'video';
+  let sortDir = 'desc'; // 對應後台設定的 order 欄位排序方向
   const grid = document.getElementById('work-grid');
 
   onSnapshot(collection(db, "jayran_works"), (snapshot) => {
@@ -481,7 +603,8 @@
 
   function render(){
     grid.classList.toggle('cat-graphic', currentCat === 'graphic');
-    const items = allWorks.filter(w => w.category === currentCat);
+    let items = allWorks.filter(w => w.category === currentCat);
+    if(sortDir === 'asc') items = [...items].reverse();
     grid.innerHTML = items.length === 0 ? `<div class="work-empty">這個分類目前尚無作品。</div>` : items.map(buildCard).join('');
   }
 
@@ -509,6 +632,15 @@
     });
   });
 
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      sortDir = btn.dataset.sort;
+      render();
+    });
+  });
+
   /* ================= About:插畫標語(捲到哪、動畫跑到哪)================= */
   const defaultAboutSlides = [
     {
@@ -524,7 +656,7 @@
       illo: `<svg class="illo" viewBox="0 0 200 200"><path d="M30 60h90a10 10 0 0 1 10 10v40a10 10 0 0 1-10 10H90l-20 20v-20H30a10 10 0 0 1-10-10V70a10 10 0 0 1 10-10Z" fill="none" stroke="#173F8C" stroke-width="3"/><path d="M100 100h60a10 10 0 0 1 10 10v30a10 10 0 0 1-10 10h-10v18l-22-18h-28a10 10 0 0 1-10-10v-30a10 10 0 0 1 10-10Z" fill="#F5B400"/></svg>`
     },
     {
-      cn: '陪你走到最後一哩路',
+      cn: '全程參與,不曾缺席',
       en: 'See It Through',
       desc: '從企劃到交付,兩人團隊全程參與,不轉包、不斷線。你面對的,自始至終是同一群人。',
       illo: `<svg class="illo" viewBox="0 0 200 200"><path d="M20 160 Q100 100 180 160" fill="none" stroke="#173F8C" stroke-width="3" stroke-linecap="round" opacity="0.35"/><circle cx="20" cy="160" r="8" fill="#F5B400"/><circle cx="100" cy="112" r="8" fill="#173F8C"/><circle cx="180" cy="160" r="8" fill="#F5B400"/><path d="M180 160 L188 130 L172 130Z" fill="#F5B400"/></svg>`
@@ -533,8 +665,8 @@
 
   function renderAboutSlides(slides){
     const el = document.getElementById('about-slides');
-    el.innerHTML = slides.map(s => `
-      <div class="about-slide">
+    el.innerHTML = slides.map((s, i) => `
+      <div class="about-slide" id="about-jump-${i + 1}">
         <div>${s.illo}</div>
         <div>
           <div class="tagline-cn">${s.cn}</div>
